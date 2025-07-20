@@ -1,0 +1,2 @@
+# tradingjournalai
+# tradingjournalai
