@@ -3,7 +3,7 @@ import { TradesController } from '../controllers/trades.controller';
 import { validateRequest } from '../middleware/validation.middleware';
 import { createTradeSchema, updateTradeSchema } from '../validators/trade.validator';
 
-const router = Router();
+const router: Router = Router();
 const tradesController = new TradesController();
 
 router.post('/', validateRequest(createTradeSchema), tradesController.createTrade);

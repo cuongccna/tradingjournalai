@@ -4,7 +4,7 @@ import { authMiddleware } from '../middleware/auth.middleware';
 import { validateRequest } from '../middleware/validation.middleware';
 import { registerSchema, updateProfileSchema } from '../validators/auth.validator';
 
-const router = Router();
+const router: Router = Router();
 const authController = new AuthController();
 
 // Public routes
