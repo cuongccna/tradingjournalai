@@ -1,5 +1,5 @@
 import { BaseService } from '@trading-journal/database';
-import { Trade } from '@trading-journal/shared';
+import { Trade, TradeStats, TradeMetric } from '@trading-journal/shared';
 
 interface TradeFilters {
   userId: string;
@@ -24,30 +24,6 @@ interface PaginatedResult<T> {
     total: number;
     totalPages: number;
   };
-}
-
-interface TradeStats {
-  totalTrades: number;
-  winningTrades: number;
-  losingTrades: number;
-  winRate: number;
-  totalPnL: number;
-  averagePnL: number;
-  bestTrade: number;
-  worstTrade: number;
-  profitFactor: number;
-  expectancy: number;
-  averageWin: number;
-  averageLoss: number;
-  maxConsecutiveWins: number;
-  maxConsecutiveLosses: number;
-  currentStreak: number;
-  sharpeRatio: number;
-  sortinoRatio: number;
-  calmarRatio: number;
-  maxDrawdown: number;
-  maxDrawdownPercent: number;
-  rMultipleAverage: number;
 }
 
 export class TradeService extends BaseService<Trade> {
@@ -128,11 +104,54 @@ export class TradeService extends BaseService<Trade> {
     const closedTrades = trades.filter(t => t.exitPrice !== undefined && t.pnl !== undefined);
     const winningTrades = closedTrades.filter(t => t.pnl! > 0);
     const losingTrades = closedTrades.filter(t => t.pnl! < 0);
+    const breakEvenTrades = closedTrades.filter(t => t.pnl === 0);
 
     // Basic stats
     const totalPnL = closedTrades.reduce((sum, t) => sum + (t.pnl || 0), 0);
     const totalWins = winningTrades.reduce((sum, t) => sum + (t.pnl || 0), 0);
     const totalLosses = Math.abs(losingTrades.reduce((sum, t) => sum + (t.pnl || 0), 0));
+
+    // Calculate percentage P&L
+    const totalPnLPercent = closedTrades.reduce((sum, t) => sum + (t.pnlPercent || 0), 0);
+    const averagePnLPercent = closedTrades.length > 0 ? totalPnLPercent / closedTrades.length : 0;
+
+    // Find best and worst trades
+    const bestTradeData = winningTrades.length > 0 
+      ? winningTrades.reduce((best, current) => (current.pnl! > best.pnl! ? current : best))
+      : null;
+    
+    const worstTradeData = losingTrades.length > 0
+      ? losingTrades.reduce((worst, current) => (current.pnl! < worst.pnl! ? current : worst))
+      : null;
+
+    // Create TradeMetric objects
+    const bestTrade: TradeMetric = bestTradeData ? {
+      tradeId: bestTradeData.id || '',
+      symbol: bestTradeData.symbol,
+      pnl: bestTradeData.pnl!,
+      pnlPercent: bestTradeData.pnlPercent || 0,
+      date: bestTradeData.exitDateTime || bestTradeData.entryDateTime,
+    } : {
+      tradeId: '',
+      symbol: '',
+      pnl: 0,
+      pnlPercent: 0,
+      date: new Date(),
+    };
+
+    const worstTrade: TradeMetric = worstTradeData ? {
+      tradeId: worstTradeData.id || '',
+      symbol: worstTradeData.symbol,
+      pnl: worstTradeData.pnl!,
+      pnlPercent: worstTradeData.pnlPercent || 0,
+      date: worstTradeData.exitDateTime || worstTradeData.entryDateTime,
+    } : {
+      tradeId: '',
+      symbol: '',
+      pnl: 0,
+      pnlPercent: 0,
+      date: new Date(),
+    };
 
     // Calculate streaks
     const { maxWins, maxLosses, currentStreak } = this.calculateStreaks(closedTrades);
@@ -152,28 +171,56 @@ export class TradeService extends BaseService<Trade> {
       ? rMultiples.reduce((a, b) => a + b, 0) / rMultiples.length 
       : 0;
 
+    // Calculate additional metrics
+    const payoffRatio = (winningTrades.length > 0 && losingTrades.length > 0) 
+      ? (totalWins / winningTrades.length) / (totalLosses / losingTrades.length) 
+      : 0;
+
+    // Calculate average holding time in hours
+    const averageHoldingTime = closedTrades.length > 0 
+      ? closedTrades.reduce((sum, t) => {
+          if (t.exitDateTime && t.entryDateTime) {
+            return sum + (t.exitDateTime.getTime() - t.entryDateTime.getTime()) / (1000 * 60 * 60);
+          }
+          return sum;
+        }, 0) / closedTrades.length
+      : 0;
+
+    // Calculate Kelly percentage
+    const kellyPercentage = winningTrades.length > 0 && losingTrades.length > 0
+      ? ((winningTrades.length / closedTrades.length) * payoffRatio - (losingTrades.length / closedTrades.length)) / payoffRatio
+      : 0;
+
     return {
       totalTrades: trades.length,
+      openTrades: trades.length - closedTrades.length,
+      closedTrades: closedTrades.length,
       winningTrades: winningTrades.length,
       losingTrades: losingTrades.length,
+      breakEvenTrades: breakEvenTrades.length,
       winRate: closedTrades.length > 0 ? (winningTrades.length / closedTrades.length) * 100 : 0,
       totalPnL,
+      totalPnLPercent,
       averagePnL: closedTrades.length > 0 ? totalPnL / closedTrades.length : 0,
-      bestTrade: winningTrades.length > 0 ? Math.max(...winningTrades.map(t => t.pnl!)) : 0,
-      worstTrade: losingTrades.length > 0 ? Math.min(...losingTrades.map(t => t.pnl!)) : 0,
-      profitFactor: totalLosses > 0 ? totalWins / totalLosses : 0,
-      expectancy: closedTrades.length > 0 ? totalPnL / closedTrades.length : 0,
+      averagePnLPercent,
+      bestTrade,
+      worstTrade,
       averageWin: winningTrades.length > 0 ? totalWins / winningTrades.length : 0,
       averageLoss: losingTrades.length > 0 ? totalLosses / losingTrades.length : 0,
-      maxConsecutiveWins: maxWins,
-      maxConsecutiveLosses: maxLosses,
-      currentStreak,
+      profitFactor: totalLosses > 0 ? totalWins / totalLosses : 0,
+      expectancy: closedTrades.length > 0 ? totalPnL / closedTrades.length : 0,
+      payoffRatio,
       sharpeRatio,
       sortinoRatio,
       calmarRatio,
       maxDrawdown,
       maxDrawdownPercent,
+      maxConsecutiveWins: maxWins,
+      maxConsecutiveLosses: maxLosses,
+      currentStreak,
+      averageHoldingTime,
       rMultipleAverage,
+      kellyPercentage,
     };
   }
 

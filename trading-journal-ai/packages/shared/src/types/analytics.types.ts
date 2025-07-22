@@ -1,3 +1,5 @@
+import { AssetType } from './trade.types';
+
 export interface TradeStats {
   totalTrades: number;
   openTrades: number;

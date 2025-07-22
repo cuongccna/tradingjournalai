@@ -1,3 +1,5 @@
+import { AssetType } from './trade.types';
+
 export interface AIInsight {
   id: string;
   userId: string;
