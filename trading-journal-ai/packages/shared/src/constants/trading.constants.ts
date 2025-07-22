@@ -20,12 +20,12 @@ export const TRADE_STATUS = {
 } as const;
 
 export const CURRENCIES = [
-  { code: 'USD', name: 'US Dollar', symbol: ' },
+  { code: 'USD', name: 'US Dollar', symbol: '$' },
   { code: 'EUR', name: 'Euro', symbol: '€' },
   { code: 'GBP', name: 'British Pound', symbol: '£' },
   { code: 'JPY', name: 'Japanese Yen', symbol: '¥' },
-  { code: 'AUD', name: 'Australian Dollar', symbol: 'A },
-  { code: 'CAD', name: 'Canadian Dollar', symbol: 'C },
+  { code: 'AUD', name: 'Australian Dollar', symbol: 'A$' },
+  { code: 'CAD', name: 'Canadian Dollar', symbol: 'C$' },
   { code: 'CHF', name: 'Swiss Franc', symbol: 'Fr' },
   { code: 'CNY', name: 'Chinese Yuan', symbol: '¥' },
   { code: 'VND', name: 'Vietnamese Dong', symbol: '₫' },
