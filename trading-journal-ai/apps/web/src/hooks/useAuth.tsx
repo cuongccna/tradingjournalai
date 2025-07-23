@@ -37,10 +37,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       if (user) {
         try {
+          // Try to get profile from backend API
           const response = await api.auth.getProfile();
           setUserProfile(response.data.data);
         } catch (error) {
-          console.error('Failed to fetch user profile:', error);
+          console.warn('Backend API not available, using Firebase user data:', error);
+          // Fallback to Firebase user data
+          setUserProfile({
+            uid: user.uid,
+            email: user.email || '',
+            displayName: user.displayName || '',
+            planId: 'free', // Default plan
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          });
         }
       } else {
         setUserProfile(null);
@@ -65,16 +75,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const register = async (email: string, password: string, displayName?: string) => {
     try {
-      // Register via API first
-      await api.auth.register({ email, password, displayName });
+      // Create user directly with Firebase Auth
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       
-      // Then sign in
-      await signInWithEmailAndPassword(auth, email, password);
+      // Update display name if provided
+      if (displayName && userCredential.user) {
+        await updateProfile(userCredential.user, { displayName });
+      }
       
       toast.success('Account created successfully!');
       router.push('/dashboard');
     } catch (error: any) {
-      toast.error(error.message || 'Failed to register');
+      console.error('Registration error:', error);
+      
+      // Handle specific Firebase errors
+      let errorMessage = 'Failed to register';
+      if (error.code === 'auth/email-already-in-use') {
+        errorMessage = 'Email is already registered';
+      } else if (error.code === 'auth/weak-password') {
+        errorMessage = 'Password is too weak';
+      } else if (error.code === 'auth/invalid-email') {
+        errorMessage = 'Invalid email address';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      toast.error(errorMessage);
       throw error;
     }
   };

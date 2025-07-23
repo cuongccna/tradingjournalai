@@ -8,6 +8,14 @@ let auth: Auth;
 
 const initializeFirebaseAdmin = () => {
   if (!app) {
+    // Check if required environment variables are set
+    if (!process.env.FIREBASE_PROJECT_ID || 
+        !process.env.FIREBASE_PRIVATE_KEY || 
+        !process.env.FIREBASE_CLIENT_EMAIL) {
+      console.warn('Firebase Admin credentials not configured. Skipping initialization.');
+      return { app: null, db: null, auth: null };
+    }
+
     const serviceAccount: ServiceAccount = {
       projectId: process.env.FIREBASE_PROJECT_ID!,
       privateKey: process.env.FIREBASE_PRIVATE_KEY!.replace(/\\n/g, '\n'),

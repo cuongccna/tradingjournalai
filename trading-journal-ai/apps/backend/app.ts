@@ -4,8 +4,8 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import compression from 'compression';
 import dotenv from 'dotenv';
-import { errorHandler } from './middleware/error.middleware';
-import routes from './routes';
+import { errorHandler } from './src/middleware/error.middleware';
+import routes from './src/routes';
 
 // Load environment variables
 dotenv.config();

@@ -19,6 +19,21 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <Providers>{children}</Providers>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              // Prevent MetaMask auto-injection errors
+              if (typeof window !== 'undefined' && window.ethereum) {
+                window.addEventListener('error', function(e) {
+                  if (e.message && e.message.includes('MetaMask')) {
+                    e.preventDefault();
+                    console.warn('MetaMask error prevented:', e.message);
+                  }
+                });
+              }
+            `,
+          }}
+        />
       </body>
     </html>
   );

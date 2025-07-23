@@ -1,35 +1,33 @@
 import { Request, Response, NextFunction } from 'express';
-import { auth } from '@trading-journal/database';
-import { AppError } from './error.middleware';
-
-export interface AuthRequest extends Request {
-  user?: {
-    uid: string;
-    email: string;
-  };
-}
+import { auth } from '../config/firebase';
 
 export const authMiddleware = async (
-  req: AuthRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const token = req.headers.authorization?.split('Bearer ')[1];
-    
+    const authHeader = req.headers.authorization;
+    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+
     if (!token) {
-      throw new AppError('No token provided', 401);
+      return res.status(401).json({
+        success: false,
+        message: 'Access token required'
+      });
     }
 
+    // Verify Firebase token
     const decodedToken = await auth.verifyIdToken(token);
     
-    req.user = {
-      uid: decodedToken.uid,
-      email: decodedToken.email || '',
-    };
+    req.user = decodedToken;
 
     next();
   } catch (error) {
-    next(new AppError('Invalid or expired token', 401));
+    console.error('Authentication error:', error);
+    return res.status(403).json({
+      success: false,
+      message: 'Invalid or expired token'
+    });
   }
 };

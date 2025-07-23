@@ -1,261 +1,203 @@
-import { BaseService } from '@trading-journal/database';
-import { Trade } from '@trading-journal/shared';
+import { db } from '../config/firebase';
+import { Trade, TradeStats } from '../types';
 
-interface TradeFilters {
-  userId: string;
-  accountId?: string;
-  assetType?: string;
-  startDate?: Date;
-  endDate?: Date;
-}
+export class TradeService {
+  private tradesCollection = db.collection('trades');
+  private statsCollection = db.collection('trade_stats');
 
-interface PaginationOptions {
-  page: number;
-  limit: number;
-  sortBy: string;
-  sortOrder: 'asc' | 'desc';
-}
+  async createTrade(tradeData: Omit<Trade, 'id' | 'createdAt' | 'updatedAt'>): Promise<Trade> {
+    try {
+      const now = new Date();
+      const trade: Omit<Trade, 'id'> = {
+        ...tradeData,
+        createdAt: now,
+        updatedAt: now
+      };
 
-interface PaginatedResult<T> {
-  data: T[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
+      const docRef = await this.tradesCollection.add(trade);
+      const createdTrade = { id: docRef.id, ...trade };
 
-interface TradeStats {
-  totalTrades: number;
-  winningTrades: number;
-  losingTrades: number;
-  winRate: number;
-  totalPnL: number;
-  averagePnL: number;
-  bestTrade: number;
-  worstTrade: number;
-  profitFactor: number;
-  expectancy: number;
-  averageWin: number;
-  averageLoss: number;
-  maxConsecutiveWins: number;
-  maxConsecutiveLosses: number;
-  currentStreak: number;
-  sharpeRatio: number;
-  sortinoRatio: number;
-  calmarRatio: number;
-  maxDrawdown: number;
-  maxDrawdownPercent: number;
-  rMultipleAverage: number;
-}
+      // Update user's trade statistics
+      await this.updateTradeStats(trade.userId);
 
-export class TradeService extends BaseService<Trade> {
-  constructor() {
-    super('trades');
+      return createdTrade;
+    } catch (error) {
+      console.error('Error creating trade:', error);
+      throw new Error('Failed to create trade');
+    }
   }
 
-  async findAllWithPagination(
-    filters: TradeFilters,
-    options: PaginationOptions
-  ): Promise<PaginatedResult<Trade>> {
-    const { page, limit, sortBy, sortOrder } = options;
-    const offset = (page - 1) * limit;
+  async getTrades(userId: string, options?: {
+    status?: 'open' | 'closed' | 'all';
+    limit?: number;
+    offset?: number;
+  }): Promise<Trade[]> {
+    try {
+      let query = this.tradesCollection.where('userId', '==', userId);
 
-    // Build query
-    let query = this.collection.where('userId', '==', filters.userId);
+      if (options?.status && options.status !== 'all') {
+        query = query.where('status', '==', options.status);
+      }
 
-    if (filters.accountId) {
-      query = query.where('accountId', '==', filters.accountId);
+      // Order by creation date (newest first)
+      query = query.orderBy('createdAt', 'desc');
+
+      if (options?.limit) {
+        query = query.limit(options.limit);
+      }
+
+      if (options?.offset) {
+        query = query.offset(options.offset);
+      }
+
+      const snapshot = await query.get();
+      return snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as Trade));
+    } catch (error) {
+      console.error('Error getting trades:', error);
+      throw new Error('Failed to get trades');
     }
-
-    if (filters.assetType) {
-      query = query.where('assetType', '==', filters.assetType);
-    }
-
-    if (filters.startDate) {
-      query = query.where('entryDateTime', '>=', filters.startDate);
-    }
-
-    if (filters.endDate) {
-      query = query.where('entryDateTime', '<=', filters.endDate);
-    }
-
-    // Get total count
-    const countSnapshot = await query.count().get();
-    const total = countSnapshot.data().count;
-
-    // Apply sorting and pagination
-    query = query.orderBy(sortBy, sortOrder).limit(limit).offset(offset);
-
-    const snapshot = await query.get();
-    const data = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-    })) as Trade[];
-
-    return {
-      data,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
-      },
-    };
   }
 
-  async calculateStats(userId: string, filters: Partial<TradeFilters>): Promise<TradeStats> {
-    const trades = await this.findAll((ref) => {
-      let query = ref.where('userId', '==', userId);
-
-      if (filters.accountId) {
-        query = query.where('accountId', '==', filters.accountId);
-      }
-
-      if (filters.startDate) {
-        query = query.where('entryDateTime', '>=', filters.startDate);
-      }
-
-      if (filters.endDate) {
-        query = query.where('entryDateTime', '<=', filters.endDate);
-      }
-
-      return query.orderBy('entryDateTime', 'asc');
-    });
-
-    // Filter closed trades
-    const closedTrades = trades.filter(t => t.exitPrice !== undefined && t.pnl !== undefined);
-    const winningTrades = closedTrades.filter(t => t.pnl! > 0);
-    const losingTrades = closedTrades.filter(t => t.pnl! < 0);
-
-    // Basic stats
-    const totalPnL = closedTrades.reduce((sum, t) => sum + (t.pnl || 0), 0);
-    const totalWins = winningTrades.reduce((sum, t) => sum + (t.pnl || 0), 0);
-    const totalLosses = Math.abs(losingTrades.reduce((sum, t) => sum + (t.pnl || 0), 0));
-
-    // Calculate streaks
-    const { maxWins, maxLosses, currentStreak } = this.calculateStreaks(closedTrades);
-
-    // Calculate drawdown
-    const { maxDrawdown, maxDrawdownPercent } = this.calculateDrawdown(closedTrades);
-
-    // Calculate ratios
-    const returns = closedTrades.map(t => t.pnlPercent || 0);
-    const sharpeRatio = this.calculateSharpeRatio(returns);
-    const sortinoRatio = this.calculateSortinoRatio(returns);
-    const calmarRatio = totalPnL / (maxDrawdown || 1);
-
-    // Calculate R-Multiple
-    const rMultiples = this.calculateRMultiples(closedTrades);
-    const rMultipleAverage = rMultiples.length > 0 
-      ? rMultiples.reduce((a, b) => a + b, 0) / rMultiples.length 
-      : 0;
-
-    return {
-      totalTrades: trades.length,
-      winningTrades: winningTrades.length,
-      losingTrades: losingTrades.length,
-      winRate: closedTrades.length > 0 ? (winningTrades.length / closedTrades.length) * 100 : 0,
-      totalPnL,
-      averagePnL: closedTrades.length > 0 ? totalPnL / closedTrades.length : 0,
-      bestTrade: winningTrades.length > 0 ? Math.max(...winningTrades.map(t => t.pnl!)) : 0,
-      worstTrade: losingTrades.length > 0 ? Math.min(...losingTrades.map(t => t.pnl!)) : 0,
-      profitFactor: totalLosses > 0 ? totalWins / totalLosses : 0,
-      expectancy: closedTrades.length > 0 ? totalPnL / closedTrades.length : 0,
-      averageWin: winningTrades.length > 0 ? totalWins / winningTrades.length : 0,
-      averageLoss: losingTrades.length > 0 ? totalLosses / losingTrades.length : 0,
-      maxConsecutiveWins: maxWins,
-      maxConsecutiveLosses: maxLosses,
-      currentStreak,
-      sharpeRatio,
-      sortinoRatio,
-      calmarRatio,
-      maxDrawdown,
-      maxDrawdownPercent,
-      rMultipleAverage,
-    };
-  }
-
-  private calculateStreaks(trades: Trade[]): { maxWins: number; maxLosses: number; currentStreak: number } {
-    let maxWins = 0;
-    let maxLosses = 0;
-    let currentWins = 0;
-    let currentLosses = 0;
-    let currentStreak = 0;
-
-    for (const trade of trades) {
-      if (trade.pnl! > 0) {
-        currentWins++;
-        currentLosses = 0;
-        maxWins = Math.max(maxWins, currentWins);
-        currentStreak = currentWins;
-      } else {
-        currentLosses++;
-        currentWins = 0;
-        maxLosses = Math.max(maxLosses, currentLosses);
-        currentStreak = -currentLosses;
-      }
-    }
-
-    return { maxWins, maxLosses, currentStreak };
-  }
-
-  private calculateDrawdown(trades: Trade[]): { maxDrawdown: number; maxDrawdownPercent: number } {
-    let peak = 0;
-    let maxDrawdown = 0;
-    let maxDrawdownPercent = 0;
-    let equity = 0;
-
-    for (const trade of trades) {
-      equity += trade.pnl || 0;
-      if (equity > peak) {
-        peak = equity;
-      }
-      const drawdown = peak - equity;
-      const drawdownPercent = peak > 0 ? (drawdown / peak) * 100 : 0;
+  async getTradeById(tradeId: string, userId: string): Promise<Trade | null> {
+    try {
+      const doc = await this.tradesCollection.doc(tradeId).get();
       
-      if (drawdown > maxDrawdown) {
-        maxDrawdown = drawdown;
-        maxDrawdownPercent = drawdownPercent;
+      if (!doc.exists) {
+        return null;
       }
+
+      const trade = { id: doc.id, ...doc.data() } as Trade;
+      
+      // Verify ownership
+      if (trade.userId !== userId) {
+        throw new Error('Unauthorized access to trade');
+      }
+
+      return trade;
+    } catch (error) {
+      console.error('Error getting trade by ID:', error);
+      throw new Error('Failed to get trade');
     }
-
-    return { maxDrawdown, maxDrawdownPercent };
   }
 
-  private calculateSharpeRatio(returns: number[], riskFreeRate: number = 0): number {
-    if (returns.length === 0) return 0;
-    
-    const avgReturn = returns.reduce((a, b) => a + b, 0) / returns.length;
-    const stdDev = Math.sqrt(
-      returns.reduce((sum, r) => sum + Math.pow(r - avgReturn, 2), 0) / returns.length
-    );
-    
-    return stdDev > 0 ? (avgReturn - riskFreeRate) / stdDev : 0;
+  async updateTrade(tradeId: string, userId: string, updateData: Partial<Trade>): Promise<Trade> {
+    try {
+      const tradeDoc = this.tradesCollection.doc(tradeId);
+      const trade = await tradeDoc.get();
+
+      if (!trade.exists) {
+        throw new Error('Trade not found');
+      }
+
+      const tradeData = trade.data() as Trade;
+      if (tradeData.userId !== userId) {
+        throw new Error('Unauthorized access to trade');
+      }
+
+      const updatedTrade = {
+        ...updateData,
+        updatedAt: new Date()
+      };
+
+      await tradeDoc.update(updatedTrade);
+
+      // Update user's trade statistics
+      await this.updateTradeStats(userId);
+
+      return {
+        id: tradeId,
+        ...tradeData,
+        ...updatedTrade
+      };
+    } catch (error) {
+      console.error('Error updating trade:', error);
+      throw new Error('Failed to update trade');
+    }
   }
 
-  private calculateSortinoRatio(returns: number[], targetReturn: number = 0): number {
-    if (returns.length === 0) return 0;
-    
-    const avgReturn = returns.reduce((a, b) => a + b, 0) / returns.length;
-    const downside = returns.filter(r => r < targetReturn);
-    
-    if (downside.length === 0) return 0;
-    
-    const downsideDeviation = Math.sqrt(
-      downside.reduce((sum, r) => sum + Math.pow(r - targetReturn, 2), 0) / downside.length
-    );
-    
-    return downsideDeviation > 0 ? (avgReturn - targetReturn) / downsideDeviation : 0;
+  async deleteTrade(tradeId: string, userId: string): Promise<void> {
+    try {
+      const tradeDoc = this.tradesCollection.doc(tradeId);
+      const trade = await tradeDoc.get();
+
+      if (!trade.exists) {
+        throw new Error('Trade not found');
+      }
+
+      const tradeData = trade.data() as Trade;
+      if (tradeData.userId !== userId) {
+        throw new Error('Unauthorized access to trade');
+      }
+
+      await tradeDoc.delete();
+
+      // Update user's trade statistics
+      await this.updateTradeStats(userId);
+    } catch (error) {
+      console.error('Error deleting trade:', error);
+      throw new Error('Failed to delete trade');
+    }
   }
 
-  private calculateRMultiples(trades: Trade[]): number[] {
-    return trades
-      .filter(t => t.stopLoss && t.entryPrice && t.pnl)
-      .map(t => {
-        const risk = Math.abs(t.entryPrice! - t.stopLoss!) * t.size!;
-        return risk > 0 ? t.pnl! / risk : 0;
-      });
+  async getTradeStats(userId: string): Promise<TradeStats> {
+    try {
+      const trades = await this.getTrades(userId);
+      
+      const stats: TradeStats = {
+        userId,
+        totalTrades: trades.length,
+        openTrades: trades.filter(t => t.status === 'open').length,
+        closedTrades: trades.filter(t => t.status === 'closed').length,
+        totalPnL: 0,
+        winRate: 0,
+        avgProfit: 0,
+        avgLoss: 0,
+        largestWin: 0,
+        largestLoss: 0,
+        profitFactor: 0,
+        updatedAt: new Date()
+      };
+
+      const closedTrades = trades.filter(t => t.status === 'closed' && t.pnl !== undefined);
+      
+      if (closedTrades.length > 0) {
+        const pnls = closedTrades.map(t => t.pnl!);
+        const profits = pnls.filter(p => p > 0);
+        const losses = pnls.filter(p => p < 0);
+
+        stats.totalPnL = pnls.reduce((sum, pnl) => sum + pnl, 0);
+        stats.winRate = profits.length / closedTrades.length * 100;
+        stats.avgProfit = profits.length > 0 ? profits.reduce((sum, p) => sum + p, 0) / profits.length : 0;
+        stats.avgLoss = losses.length > 0 ? Math.abs(losses.reduce((sum, l) => sum + l, 0) / losses.length) : 0;
+        stats.largestWin = profits.length > 0 ? Math.max(...profits) : 0;
+        stats.largestLoss = losses.length > 0 ? Math.abs(Math.min(...losses)) : 0;
+        stats.profitFactor = stats.avgLoss > 0 ? stats.avgProfit / stats.avgLoss : 0;
+      }
+
+      return stats;
+    } catch (error) {
+      console.error('Error calculating trade stats:', error);
+      throw new Error('Failed to calculate trade statistics');
+    }
+  }
+
+  private async updateTradeStats(userId: string): Promise<void> {
+    try {
+      const stats = await this.getTradeStats(userId);
+      await this.statsCollection.doc(userId).set(stats, { merge: true });
+    } catch (error) {
+      console.error('Error updating trade stats:', error);
+    }
+  }
+
+  // Helper method to calculate P&L for a trade
+  static calculatePnL(trade: Trade): number | null {
+    if (!trade.exitPrice) return null;
+    
+    const multiplier = trade.side === 'buy' ? 1 : -1;
+    return (trade.exitPrice - trade.entryPrice) * trade.quantity * multiplier;
   }
 }
