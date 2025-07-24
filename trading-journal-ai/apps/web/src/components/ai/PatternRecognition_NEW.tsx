@@ -81,7 +81,7 @@ export default function PatternRecognition() {
     // Generate patterns for symbols with multiple trades
     Object.entries(symbolGroups).forEach(([symbol, trades]) => {
       if (trades.length >= 2) {
-        const closedTrades = trades.filter(t => t.status === 'closed' && t.pnl !== undefined);
+        const closedTrades = trades.filter(t => t.status === 'CLOSED' && t.pnl !== undefined);
         const winningTrades = closedTrades.filter(t => t.pnl! > 0);
         const successRate = closedTrades.length > 0 ? (winningTrades.length / closedTrades.length) * 100 : 0;
         
@@ -102,7 +102,7 @@ export default function PatternRecognition() {
             riskReward: 2.0,
             probability: successRate,
             historicalAccuracy: successRate,
-            relatedTrades: trades.map(t => t.id!).filter(Boolean)
+            relatedTrades: trades.map(t => t.id)
           });
         } else if (successRate < 40 && closedTrades.length >= 3) {
           // Bearish pattern detected
@@ -120,14 +120,14 @@ export default function PatternRecognition() {
             riskReward: 1.0,
             probability: 100 - successRate,
             historicalAccuracy: 100 - successRate,
-            relatedTrades: trades.map(t => t.id!).filter(Boolean)
+            relatedTrades: trades.map(t => t.id)
           });
         }
 
         // Add to performance metrics
         if (closedTrades.length > 0) {
-          const avgReturn = closedTrades.reduce((sum, t) => sum + (t.pnl! / (t.entryPrice * t.size) * 100), 0) / closedTrades.length;
-          const returns = closedTrades.map(t => t.pnl! / (t.entryPrice * t.size) * 100);
+          const avgReturn = closedTrades.reduce((sum, t) => sum + (t.pnl! / (t.entryPrice * t.quantity) * 100), 0) / closedTrades.length;
+          const returns = closedTrades.map(t => t.pnl! / (t.entryPrice * t.quantity) * 100);
           
           performanceMetrics.push({
             pattern: symbol,
@@ -145,17 +145,17 @@ export default function PatternRecognition() {
 
     // Strategy-based patterns
     const strategyGroups = analytics.recentTrades.reduce((acc, trade) => {
-      if (trade.strategyId) {
-        if (!acc[trade.strategyId]) {
-          acc[trade.strategyId] = [];
+      if (trade.strategy) {
+        if (!acc[trade.strategy]) {
+          acc[trade.strategy] = [];
         }
-        acc[trade.strategyId].push(trade);
+        acc[trade.strategy].push(trade);
       }
       return acc;
     }, {} as Record<string, typeof analytics.recentTrades>);
 
     Object.entries(strategyGroups).forEach(([strategy, trades]) => {
-      const closedTrades = trades.filter(t => t.status === 'closed' && t.pnl !== undefined);
+      const closedTrades = trades.filter(t => t.status === 'CLOSED' && t.pnl !== undefined);
       if (closedTrades.length >= 2) {
         const winningTrades = closedTrades.filter(t => t.pnl! > 0);
         const successRate = (winningTrades.length / closedTrades.length) * 100;
@@ -174,12 +174,12 @@ export default function PatternRecognition() {
           riskReward: successRate > 50 ? 2.0 : 0.5,
           probability: successRate,
           historicalAccuracy: successRate,
-          relatedTrades: trades.map(t => t.id!).filter(Boolean)
+          relatedTrades: trades.map(t => t.id)
         });
 
         // Add strategy performance metrics
-        const avgReturn = closedTrades.reduce((sum, t) => sum + (t.pnl! / (t.entryPrice * t.size) * 100), 0) / closedTrades.length;
-        const returns = closedTrades.map(t => t.pnl! / (t.entryPrice * t.size) * 100);
+        const avgReturn = closedTrades.reduce((sum, t) => sum + (t.pnl! / (t.entryPrice * t.quantity) * 100), 0) / closedTrades.length;
+        const returns = closedTrades.map(t => t.pnl! / (t.entryPrice * t.quantity) * 100);
         
         performanceMetrics.push({
           pattern: strategy,

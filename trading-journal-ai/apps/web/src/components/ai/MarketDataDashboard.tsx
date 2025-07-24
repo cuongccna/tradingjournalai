@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useDashboardAnalytics } from '@/hooks/useDashboardAnalytics';
+import { Trade } from '@/../../../../packages/shared/src/types';
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -13,149 +15,120 @@ import {
   RefreshCw,
   AlertTriangle,
   Target,
-  Clock
+  Clock,
+  Database
 } from 'lucide-react';
 
-interface MarketData {
+interface PortfolioData {
   symbol: string;
-  price: number;
-  change: number;
-  changePercent: number;
-  volume: number;
-  marketCap?: number;
-  pe?: number;
+  assetType: string;
+  totalQuantity: number;
+  averageEntryPrice: number;
+  currentValue: number;
+  totalPnL: number;
+  pnlPercent: number;
+  openPositions: number;
+  closedTrades: number;
+  winRate: number;
+  lastTradeDate: string;
   sentiment: 'bullish' | 'bearish' | 'neutral';
+  tradeCount: number;
+  avgPnL: number;
+  performance: 'positive' | 'negative' | 'neutral';
 }
 
-interface TradingSignal {
-  id: string;
+interface TradingRecommendation {
   symbol: string;
-  type: 'buy' | 'sell' | 'hold';
-  strength: 'strong' | 'moderate' | 'weak';
+  action: 'hold' | 'review' | 'buy' | 'sell';
+  confidence: 'high' | 'medium' | 'low';
   reason: string;
-  target: number;
-  stopLoss: number;
-  confidence: number;
-  timestamp: Date;
 }
 
 export default function MarketDataDashboard() {
-  const [marketData, setMarketData] = useState<MarketData[]>([]);
-  const [tradingSignals, setTradingSignals] = useState<TradingSignal[]>([]);
+  const { analytics, loading: analyticsLoading, error } = useDashboardAnalytics();
+  const [portfolioData, setPortfolioData] = useState<PortfolioData[]>([]);
+  const [recommendations, setRecommendations] = useState<TradingRecommendation[]>([]);
   const [loading, setLoading] = useState(false);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
 
   useEffect(() => {
-    fetchMarketData();
-    const interval = setInterval(fetchMarketData, 30000); // Update every 30 seconds
-    return () => clearInterval(interval);
-  }, []);
+    if (analytics && !analyticsLoading) {
+      analyzePortfolioData();
+    }
+  }, [analytics, analyticsLoading]);
 
-  const fetchMarketData = async () => {
+  const analyzePortfolioData = async () => {
+    if (!analytics) return;
+    
     setLoading(true);
     
-    // Simulate API call - In real implementation, this would fetch from financial APIs
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const mockData: MarketData[] = [
-      {
-        symbol: 'AAPL',
-        price: 175.32,
-        change: 2.15,
-        changePercent: 1.24,
-        volume: 65420000,
-        marketCap: 2750000000000,
-        pe: 28.5,
-        sentiment: 'bullish'
-      },
-      {
-        symbol: 'MSFT',
-        price: 338.45,
-        change: -1.23,
-        changePercent: -0.36,
-        volume: 24680000,
-        marketCap: 2520000000000,
-        pe: 32.1,
-        sentiment: 'neutral'
-      },
-      {
-        symbol: 'GOOGL',
-        price: 142.87,
-        change: 4.32,
-        changePercent: 3.12,
-        volume: 31200000,
-        marketCap: 1800000000000,
-        pe: 25.6,
-        sentiment: 'bullish'
-      },
-      {
-        symbol: 'TSLA',
-        price: 201.34,
-        change: -8.76,
-        changePercent: -4.17,
-        volume: 98500000,
-        marketCap: 640000000000,
-        pe: 65.2,
-        sentiment: 'bearish'
-      },
-      {
-        symbol: 'NVDA',
-        price: 456.78,
-        change: 12.45,
-        changePercent: 2.80,
-        volume: 42300000,
-        marketCap: 1120000000000,
-        pe: 78.3,
-        sentiment: 'bullish'
-      },
-      {
-        symbol: 'SPY',
-        price: 421.56,
-        change: 1.89,
-        changePercent: 0.45,
-        volume: 89200000,
-        sentiment: 'bullish'
-      }
-    ];
+    // Analyze user's actual trading data
+    const portfolioAnalysis: PortfolioData[] = [];
+    const recommendations: TradingRecommendation[] = [];
 
-    const mockSignals: TradingSignal[] = [
-      {
-        id: '1',
-        symbol: 'AAPL',
-        type: 'buy',
-        strength: 'strong',
-        reason: 'Bullish momentum with strong volume confirmation',
-        target: 185.00,
-        stopLoss: 170.00,
-        confidence: 87,
-        timestamp: new Date()
-      },
-      {
-        id: '2',
-        symbol: 'TSLA',
-        type: 'sell',
-        strength: 'moderate',
-        reason: 'Bearish divergence in RSI and price action',
-        target: 190.00,
-        stopLoss: 210.00,
-        confidence: 72,
-        timestamp: new Date()
-      },
-      {
-        id: '3',
-        symbol: 'NVDA',
-        type: 'hold',
-        strength: 'strong',
-        reason: 'Consolidation phase, wait for breakout',
-        target: 480.00,
-        stopLoss: 440.00,
-        confidence: 81,
-        timestamp: new Date()
+    // Group trades by symbol to analyze portfolio
+    const symbolGroups = analytics.recentTrades.reduce((acc: Record<string, Trade[]>, trade: Trade) => {
+      const symbol = trade.symbol || 'Unknown';
+      if (!acc[symbol]) {
+        acc[symbol] = [];
       }
-    ];
+      acc[symbol].push(trade);
+      return acc;
+    }, {});
 
-    setMarketData(mockData);
-    setTradingSignals(mockSignals);
+    // Analyze each symbol in portfolio
+    Object.entries(symbolGroups).forEach(([symbol, trades]: [string, Trade[]]) => {
+      const totalPnL = trades.reduce((sum, trade) => sum + (trade.pnl || 0), 0);
+      const totalQuantity = trades.reduce((sum, trade) => sum + Math.abs(trade.size || trade.quantity || 0), 0);
+      const winRate = trades.filter(trade => (trade.pnl || 0) > 0).length / trades.length * 100;
+      
+      portfolioAnalysis.push({
+        symbol,
+        assetType: trades[0]?.assetType || 'unknown',
+        totalQuantity,
+        averageEntryPrice: trades.reduce((sum, trade) => sum + (trade.entryPrice || 0), 0) / trades.length,
+        currentValue: totalQuantity * (trades[trades.length - 1]?.entryPrice || 0),
+        totalPnL,
+        pnlPercent: (totalPnL / Math.abs(totalQuantity * (trades[0]?.entryPrice || 1))) * 100,
+        openPositions: trades.filter(trade => trade.status === 'open' || trade.status === 'OPEN').length,
+        closedTrades: trades.filter(trade => trade.status === 'closed' || trade.status === 'CLOSED').length,
+        winRate,
+        lastTradeDate: (() => {
+          const lastTrade = trades[trades.length - 1];
+          if (lastTrade?.exitDateTime) {
+            return typeof lastTrade.exitDateTime === 'string' ? lastTrade.exitDateTime : lastTrade.exitDateTime.toISOString();
+          }
+          if (lastTrade?.entryDateTime) {
+            return typeof lastTrade.entryDateTime === 'string' ? lastTrade.entryDateTime : lastTrade.entryDateTime.toISOString();
+          }
+          return new Date().toISOString();
+        })(),
+        sentiment: totalPnL > 500 ? 'bullish' : totalPnL < -500 ? 'bearish' : 'neutral',
+        tradeCount: trades.length,
+        avgPnL: totalPnL / trades.length,
+        performance: totalPnL > 0 ? 'positive' : totalPnL < 0 ? 'negative' : 'neutral'
+      });
+
+      // Generate recommendations based on performance
+      if (winRate > 70 && totalPnL > 0) {
+        recommendations.push({
+          symbol,
+          action: 'hold',
+          confidence: 'high',
+          reason: `Strong performance với win rate ${winRate.toFixed(1)}% và tổng P&L: ${totalPnL.toFixed(2)}`
+        });
+      } else if (winRate < 30 || totalPnL < -1000) {
+        recommendations.push({
+          symbol,
+          action: 'review',
+          confidence: 'medium',
+          reason: `Cần xem xét lại với win rate ${winRate.toFixed(1)}% và tổng P&L: ${totalPnL.toFixed(2)}`
+        });
+      }
+    });
+
+    setPortfolioData(portfolioAnalysis);
+    setRecommendations(recommendations);
     setLastUpdate(new Date());
     setLoading(false);
   };
@@ -174,18 +147,18 @@ export default function MarketDataDashboard() {
     return value.toLocaleString();
   };
 
-  const getSignalColor = (type: string) => {
-    switch (type) {
-      case 'buy': return 'bg-green-100 text-green-800 border-green-200';
-      case 'sell': return 'bg-red-100 text-red-800 border-red-200';
+  const getActionColor = (action: string) => {
+    switch (action) {
+      case 'hold': return 'bg-green-100 text-green-800 border-green-200';
+      case 'review': return 'bg-red-100 text-red-800 border-red-200';
       default: return 'bg-yellow-100 text-yellow-800 border-yellow-200';
     }
   };
 
-  const getStrengthColor = (strength: string) => {
-    switch (strength) {
-      case 'strong': return 'text-green-600';
-      case 'moderate': return 'text-yellow-600';
+  const getConfidenceColor = (confidence: string) => {
+    switch (confidence) {
+      case 'high': return 'text-green-600';
+      case 'medium': return 'text-yellow-600';
       default: return 'text-gray-600';
     }
   };
@@ -216,7 +189,7 @@ export default function MarketDataDashboard() {
             </p>
           )}
           <Button 
-            onClick={fetchMarketData} 
+            onClick={analyzePortfolioData} 
             disabled={loading}
             className="flex items-center gap-2"
           >
@@ -241,59 +214,54 @@ export default function MarketDataDashboard() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <DollarSign className="h-5 w-5 text-green-500" />
-                  Market Overview
+                  Portfolio Analysis
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {marketData.map((stock) => (
-                    <div key={stock.symbol} className="p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                  {portfolioData.map((portfolio) => (
+                    <div key={portfolio.symbol} className="p-4 border rounded-lg hover:bg-gray-50 transition-colors">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div>
-                            <h3 className="font-bold text-lg">{stock.symbol}</h3>
+                            <h3 className="font-bold text-lg">{portfolio.symbol}</h3>
                             <div className="flex items-center gap-2 text-sm text-gray-500">
-                              {getSentimentIcon(stock.sentiment)}
-                              <span className="capitalize">{stock.sentiment}</span>
+                              <span className="capitalize">{portfolio.performance}</span>
+                              <span>• {portfolio.tradeCount} trades</span>
                             </div>
                           </div>
                         </div>
                         
                         <div className="text-right">
-                          <p className="text-lg font-bold">{formatCurrency(stock.price)}</p>
+                          <p className="text-lg font-bold">${portfolio.totalPnL.toFixed(2)}</p>
                           <div className={`text-sm font-medium ${
-                            stock.change >= 0 ? 'text-green-600' : 'text-red-600'
+                            portfolio.totalPnL >= 0 ? 'text-green-600' : 'text-red-600'
                           }`}>
-                            {stock.change >= 0 ? '+' : ''}{stock.change.toFixed(2)} 
-                            ({stock.changePercent.toFixed(2)}%)
+                            Win Rate: {portfolio.winRate.toFixed(1)}%
                           </div>
                         </div>
                       </div>
                       
                       <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                         <div>
-                          <span className="text-gray-500">Volume:</span>
-                          <p className="font-medium">{formatNumber(stock.volume)}</p>
+                          <span className="text-gray-500">Total Quantity:</span>
+                          <p className="font-medium">{portfolio.totalQuantity.toFixed(2)}</p>
                         </div>
-                        {stock.marketCap && (
-                          <div>
-                            <span className="text-gray-500">Market Cap:</span>
-                            <p className="font-medium">{formatNumber(stock.marketCap)}</p>
-                          </div>
-                        )}
-                        {stock.pe && (
-                          <div>
-                            <span className="text-gray-500">P/E:</span>
-                            <p className="font-medium">{stock.pe}</p>
-                          </div>
-                        )}
                         <div>
-                          <span className="text-gray-500">Status:</span>
+                          <span className="text-gray-500">Avg P&L:</span>
+                          <p className="font-medium">${portfolio.avgPnL.toFixed(2)}</p>
+                        </div>
+                        <div>
+                          <span className="text-gray-500">Trade Count:</span>
+                          <p className="font-medium">{portfolio.tradeCount}</p>
+                        </div>
+                        <div>
+                          <span className="text-gray-500">Performance:</span>
                           <p className={`font-medium capitalize ${
-                            stock.sentiment === 'bullish' ? 'text-green-600' :
-                            stock.sentiment === 'bearish' ? 'text-red-600' : 'text-gray-600'
+                            portfolio.performance === 'positive' ? 'text-green-600' :
+                            portfolio.performance === 'negative' ? 'text-red-600' : 'text-gray-600'
                           }`}>
-                            {stock.sentiment}
+                            {portfolio.performance}
                           </p>
                         </div>
                       </div>
@@ -304,66 +272,37 @@ export default function MarketDataDashboard() {
             </Card>
           </div>
 
-          {/* Trading Signals */}
+          {/* Trading Recommendations */}
           <div>
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Target className="h-5 w-5 text-orange-500" />
-                  Trading Signals
+                  Trading Recommendations
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {tradingSignals.map((signal) => (
-                    <div key={signal.id} className="p-3 border rounded-lg">
+                  {recommendations.map((recommendation, index) => (
+                    <div key={index} className="p-3 border rounded-lg">
                       <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-semibold">{signal.symbol}</h4>
-                        <Badge className={getSignalColor(signal.type)}>
-                          {signal.type.toUpperCase()}
+                        <h4 className="font-semibold">{recommendation.symbol}</h4>
+                        <Badge className={getActionColor(recommendation.action)}>
+                          {recommendation.action.toUpperCase()}
                         </Badge>
                       </div>
                       
                       <div className="space-y-2 text-sm">
                         <div className="flex items-center justify-between">
-                          <span className="text-gray-500">Strength:</span>
-                          <span className={`font-medium capitalize ${getStrengthColor(signal.strength)}`}>
-                            {signal.strength}
-                          </span>
-                        </div>
-                        
-                        <div className="flex items-center justify-between">
                           <span className="text-gray-500">Confidence:</span>
-                          <span className="font-medium">{signal.confidence}%</span>
-                        </div>
-                        
-                        <div className="flex items-center justify-between">
-                          <span className="text-gray-500">Target:</span>
-                          <span className="font-medium text-green-600">
-                            {formatCurrency(signal.target)}
-                          </span>
-                        </div>
-                        
-                        <div className="flex items-center justify-between">
-                          <span className="text-gray-500">Stop Loss:</span>
-                          <span className="font-medium text-red-600">
-                            {formatCurrency(signal.stopLoss)}
+                          <span className={`font-medium capitalize ${getConfidenceColor(recommendation.confidence)}`}>
+                            {recommendation.confidence}
                           </span>
                         </div>
                       </div>
                       
                       <div className="mt-3 pt-3 border-t">
-                        <p className="text-xs text-gray-600">{signal.reason}</p>
-                      </div>
-                      
-                      <div className="mt-2 flex items-center justify-between text-xs text-gray-500">
-                        <div className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          {signal.timestamp.toLocaleTimeString()}
-                        </div>
-                        <Button size="sm" variant="ghost" className="text-xs">
-                          View Details
-                        </Button>
+                        <p className="text-xs text-gray-600">{recommendation.reason}</p>
                       </div>
                     </div>
                   ))}

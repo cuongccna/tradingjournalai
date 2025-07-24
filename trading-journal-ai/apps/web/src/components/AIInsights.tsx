@@ -57,20 +57,106 @@ export const AIInsights = ({ analytics }: AIInsightsProps) => {
   const insights = useMemo((): AIInsight[] => {
     const insights: AIInsight[] = [];
 
-    // Win streak detection
-    const recentWins = analytics.recentTrades
-      .filter(trade => trade.status === 'CLOSED' && trade.pnl)
-      .slice(0, 10)
-      .reduce((streak, trade) => {
-        if (trade.pnl! > 0) return streak + 1;
-        return 0;
-      }, 0);
+    // Strategy Performance Analysis
+    const strategyPerformance = analytics.recentTrades.reduce((acc, trade) => {
+      if (trade.strategy && trade.status === 'CLOSED' && trade.pnl !== undefined) {
+        if (!acc[trade.strategy]) {
+          acc[trade.strategy] = { trades: 0, totalPnL: 0, wins: 0 };
+        }
+        acc[trade.strategy].trades++;
+        acc[trade.strategy].totalPnL += trade.pnl;
+        if (trade.pnl > 0) acc[trade.strategy].wins++;
+      }
+      return acc;
+    }, {} as Record<string, { trades: number; totalPnL: number; wins: number }>);
 
-    if (recentWins >= 3) {
+    const bestStrategy = Object.entries(strategyPerformance)
+      .sort(([,a], [,b]) => b.totalPnL - a.totalPnL)[0];
+
+    if (bestStrategy && bestStrategy[1].trades >= 2) {
+      const winRate = (bestStrategy[1].wins / bestStrategy[1].trades) * 100;
       insights.push({
         type: 'success',
-        title: `${recentWins}-Trade Winning Streak!`,
-        message: `You're on fire! ${recentWins} consecutive winning trades. Great risk management!`,
+        title: `Best Strategy: ${bestStrategy[0]}`,
+        message: `"${bestStrategy[0]}" shows ${bestStrategy[1].totalPnL.toLocaleString('en-US', { style: 'currency', currency: 'USD' })} profit with ${winRate.toFixed(1)}% win rate across ${bestStrategy[1].trades} trades.`,
+        icon: '🎯',
+        priority: 1
+      });
+    }
+
+    // Tag-based Insights
+    const tagAnalysis = analytics.recentTrades.reduce((acc, trade) => {
+      if (trade.tags && trade.status === 'CLOSED' && trade.pnl !== undefined) {
+        trade.tags.forEach(tag => {
+          if (!acc[tag]) {
+            acc[tag] = { trades: 0, totalPnL: 0, wins: 0 };
+          }
+          acc[tag].trades++;
+          acc[tag].totalPnL += trade.pnl!;
+          if (trade.pnl! > 0) acc[tag].wins++;
+        });
+      }
+      return acc;
+    }, {} as Record<string, { trades: number; totalPnL: number; wins: number }>);
+
+    const bestTag = Object.entries(tagAnalysis)
+      .filter(([,data]) => data.trades >= 2)
+      .sort(([,a], [,b]) => b.totalPnL - a.totalPnL)[0];
+
+    if (bestTag) {
+      const winRate = (bestTag[1].wins / bestTag[1].trades) * 100;
+      insights.push({
+        type: 'info',
+        title: `Profitable Tag: #${bestTag[0]}`,
+        message: `Trades tagged with "${bestTag[0]}" show strong performance: ${bestTag[1].totalPnL.toLocaleString('en-US', { style: 'currency', currency: 'USD' })} profit, ${winRate.toFixed(1)}% win rate.`,
+        icon: '🏷️',
+        priority: 2
+      });
+    }
+
+    // Notes Pattern Analysis
+    const commonNotesWords = analytics.recentTrades
+      .filter(trade => trade.notes && trade.status === 'CLOSED' && trade.pnl && trade.pnl > 0)
+      .map(trade => trade.notes!.toLowerCase().split(/\s+/))
+      .flat()
+      .filter(word => word.length > 3)
+      .reduce((acc, word) => {
+        acc[word] = (acc[word] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+
+    const topNoteWord = Object.entries(commonNotesWords)
+      .sort(([,a], [,b]) => b - a)[0];
+
+    if (topNoteWord && topNoteWord[1] >= 2) {
+      insights.push({
+        type: 'info',
+        title: `Winning Pattern: "${topNoteWord[0]}"`,
+        message: `The word "${topNoteWord[0]}" appears ${topNoteWord[1]} times in profitable trade notes. This might indicate a successful pattern.`,
+        icon: '📝',
+        priority: 3
+      });
+    }
+
+    // Win streak detection
+    let currentStreak = 0;
+    const recentClosedTrades = analytics.recentTrades
+      .filter(trade => trade.status === 'CLOSED' && trade.pnl !== undefined)
+      .sort((a, b) => new Date(b.entryDate).getTime() - new Date(a.entryDate).getTime());
+
+    for (const trade of recentClosedTrades) {
+      if (trade.pnl! > 0) {
+        currentStreak++;
+      } else {
+        break;
+      }
+    }
+
+    if (currentStreak >= 3) {
+      insights.push({
+        type: 'success',
+        title: `${currentStreak}-Trade Winning Streak!`,
+        message: `You're on fire! ${currentStreak} consecutive winning trades. Great momentum!`,
         icon: '🔥',
         priority: 1
       });
@@ -130,77 +216,129 @@ export const AIInsights = ({ analytics }: AIInsightsProps) => {
       });
     }
 
-    // Drawdown alerts
-    if (analytics.maxDrawdown > Math.abs(analytics.totalPnL) * 0.2) {
-      insights.push({
-        type: 'danger',
-        title: 'High Drawdown Risk',
-        message: `Max drawdown of $${analytics.maxDrawdown.toLocaleString()} is significant. Review risk management.`,
-        icon: '⬇️',
-        priority: 1
-      });
-    }
-
-    // Trading frequency
-    const avgTradesPerDay = analytics.totalTrades / 30; // Assuming last 30 days
-    if (avgTradesPerDay > 5) {
-      insights.push({
-        type: 'info',
-        title: 'High Trading Frequency',
-        message: `${avgTradesPerDay.toFixed(1)} trades/day. Ensure quality over quantity.`,
-        icon: '📊',
-        priority: 3
-      });
-    }
-
-    // Best performing strategy
-    const strategies = analytics.recentTrades
-      .filter(trade => trade.strategy && trade.status === 'CLOSED' && trade.pnl)
+    // Advanced Pattern Recognition
+    const timeBasedAnalysis = analytics.recentTrades
+      .filter(trade => trade.status === 'CLOSED' && trade.pnl !== undefined)
       .reduce((acc, trade) => {
-        const strategy = trade.strategy!;
-        if (!acc[strategy]) {
-          acc[strategy] = { pnl: 0, count: 0 };
+        const hour = new Date(trade.entryDate).getHours();
+        const timeSlot = hour < 9 ? 'Pre-Market' : 
+                        hour < 12 ? 'Morning' : 
+                        hour < 16 ? 'Afternoon' : 'After-Hours';
+        
+        if (!acc[timeSlot]) {
+          acc[timeSlot] = { trades: 0, totalPnL: 0, wins: 0 };
         }
-        acc[strategy].pnl += trade.pnl!;
-        acc[strategy].count += 1;
+        acc[timeSlot].trades++;
+        acc[timeSlot].totalPnL += trade.pnl!;
+        if (trade.pnl! > 0) acc[timeSlot].wins++;
+        
         return acc;
-      }, {} as Record<string, { pnl: number; count: number }>);
+      }, {} as Record<string, { trades: number; totalPnL: number; wins: number }>);
 
-    const bestStrategy = Object.entries(strategies).reduce((best, [name, data]) => {
-      const avgPnL = data.pnl / data.count;
-      return avgPnL > best.avgPnL ? { name, avgPnL, count: data.count } : best;
-    }, { name: '', avgPnL: 0, count: 0 });
+    const bestTimeSlot = Object.entries(timeBasedAnalysis)
+      .filter(([,data]) => data.trades >= 3)
+      .sort(([,a], [,b]) => (b.wins/b.trades) - (a.wins/a.trades))[0];
 
-    if (bestStrategy.name && bestStrategy.count >= 3) {
+    if (bestTimeSlot) {
+      const winRate = (bestTimeSlot[1].wins / bestTimeSlot[1].trades) * 100;
       insights.push({
         type: 'info',
-        title: 'Top Performing Strategy',
-        message: `"${bestStrategy.name}" averaging $${bestStrategy.avgPnL.toFixed(0)} per trade (${bestStrategy.count} trades).`,
-        icon: '💡',
-        priority: 3
+        title: `Optimal Trading Time: ${bestTimeSlot[0]}`,
+        message: `${bestTimeSlot[0]} trading shows ${winRate.toFixed(1)}% win rate with ${bestTimeSlot[1].totalPnL.toLocaleString('en-US', { style: 'currency', currency: 'USD' })} total profit.`,
+        icon: '⏰',
+        priority: 2
       });
     }
 
-    // Recent performance trend
-    const last5Trades = analytics.recentTrades
-      .filter(trade => trade.status === 'CLOSED' && trade.pnl)
-      .slice(0, 5);
-    
-    if (last5Trades.length >= 5) {
-      const recentPnL = last5Trades.reduce((sum, trade) => sum + (trade.pnl || 0), 0);
-      if (recentPnL > 0) {
+    // Risk-Reward Analysis
+    const riskRewardTrades = analytics.recentTrades
+      .filter(trade => trade.status === 'CLOSED' && trade.pnl !== undefined)
+      .map(trade => {
+        const risk = Math.abs(trade.entryPrice - (trade.exitPrice || trade.entryPrice));
+        const reward = Math.abs(trade.pnl!);
+        return { risk, reward, ratio: reward / (risk * trade.quantity) };
+      })
+      .filter(trade => trade.risk > 0);
+
+    if (riskRewardTrades.length >= 3) {
+      const avgRiskReward = riskRewardTrades.reduce((sum, trade) => sum + trade.ratio, 0) / riskRewardTrades.length;
+      if (avgRiskReward > 2) {
         insights.push({
           type: 'success',
-          title: 'Strong Recent Performance',
-          message: `Last 5 trades generated $${recentPnL.toLocaleString()} profit.`,
-          icon: '📈',
-          priority: 2
+          title: 'Excellent Risk Management',
+          message: `Average risk-reward ratio of ${avgRiskReward.toFixed(2)}:1 indicates strong position sizing discipline.`,
+          icon: '⚖️',
+          priority: 1
+        });
+      } else if (avgRiskReward < 1) {
+        insights.push({
+          type: 'warning',
+          title: 'Risk-Reward Needs Attention',
+          message: `Current average risk-reward ratio: ${avgRiskReward.toFixed(2)}:1. Consider improving exit strategies.`,
+          icon: '⚠️',
+          priority: 1
+        });
+      }
+    }
+
+    // Symbol Performance Analysis
+    const symbolPerformance = analytics.recentTrades
+      .filter(trade => trade.status === 'CLOSED' && trade.pnl !== undefined)
+      .reduce((acc, trade) => {
+        if (!acc[trade.symbol]) {
+          acc[trade.symbol] = { trades: 0, totalPnL: 0, wins: 0 };
+        }
+        acc[trade.symbol].trades++;
+        acc[trade.symbol].totalPnL += trade.pnl!;
+        if (trade.pnl! > 0) acc[trade.symbol].wins++;
+        return acc;
+      }, {} as Record<string, { trades: number; totalPnL: number; wins: number }>);
+
+    const bestSymbol = Object.entries(symbolPerformance)
+      .filter(([,data]) => data.trades >= 2)
+      .sort(([,a], [,b]) => b.totalPnL - a.totalPnL)[0];
+
+    if (bestSymbol) {
+      const winRate = (bestSymbol[1].wins / bestSymbol[1].trades) * 100;
+      insights.push({
+        type: 'success',
+        title: `Top Performer: ${bestSymbol[0]}`,
+        message: `${bestSymbol[0]} is your strongest asset with ${bestSymbol[1].totalPnL.toLocaleString('en-US', { style: 'currency', currency: 'USD' })} profit and ${winRate.toFixed(1)}% win rate.`,
+        icon: '📊',
+        priority: 2
+      });
+    }
+
+    // Momentum Analysis
+    if (analytics.recentTrades.length >= 10) {
+      const last10Trades = analytics.recentTrades
+        .filter(trade => trade.status === 'CLOSED' && trade.pnl !== undefined)
+        .slice(0, 10);
+      
+      const recentWins = last10Trades.filter(trade => trade.pnl! > 0).length;
+      const recentPnL = last10Trades.reduce((sum, trade) => sum + trade.pnl!, 0);
+      
+      if (recentWins >= 7) {
+        insights.push({
+          type: 'success',
+          title: 'Strong Recent Momentum',
+          message: `${recentWins}/10 recent trades profitable with ${recentPnL.toLocaleString('en-US', { style: 'currency', currency: 'USD' })} net gain. Keep the momentum!`,
+          icon: '🚀',
+          priority: 1
+        });
+      } else if (recentWins <= 3) {
+        insights.push({
+          type: 'warning',
+          title: 'Recent Struggles Detected',
+          message: `Only ${recentWins}/10 recent trades profitable. Consider reviewing your strategy or taking a break.`,
+          icon: '📉',
+          priority: 1
         });
       }
     }
 
     // Sort by priority and return top insights
-    return insights.sort((a, b) => a.priority - b.priority).slice(0, 4);
+    return insights.sort((a, b) => a.priority - b.priority).slice(0, 6);
   }, [analytics]);
 
   const getInsightStyle = (type: string) => {
@@ -227,12 +365,40 @@ export const AIInsights = ({ analytics }: AIInsightsProps) => {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          🤖 AI Insights
+          🤖 AI Trading Assistant
+          <span className="text-sm bg-green-100 text-green-700 px-2 py-1 rounded-full font-normal">
+            Live Analysis
+          </span>
         </CardTitle>
-        <CardDescription>Smart recommendations based on your trading patterns</CardDescription>
+        <CardDescription>
+          AI-powered insights from your trading patterns • {analytics.totalTrades} trades analyzed
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
+          {/* Quick Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-3 bg-gray-50 rounded-lg">
+            <div className="text-center">
+              <div className={`text-xl font-bold ${analytics.totalPnL >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {analytics.totalPnL.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
+              </div>
+              <div className="text-xs text-gray-500">Total P&L</div>
+            </div>
+            <div className="text-center">
+              <div className="text-xl font-bold text-blue-600">{analytics.winRate.toFixed(1)}%</div>
+              <div className="text-xs text-gray-500">Win Rate</div>
+            </div>
+            <div className="text-center">
+              <div className="text-xl font-bold text-purple-600">{analytics.profitFactor.toFixed(2)}</div>
+              <div className="text-xs text-gray-500">Profit Factor</div>
+            </div>
+            <div className="text-center">
+              <div className="text-xl font-bold text-orange-600">{analytics.activePositions}</div>
+              <div className="text-xs text-gray-500">Open Trades</div>
+            </div>
+          </div>
+
+          {/* AI Insights */}
           {insights.length === 0 ? (
             <div className="text-center py-6 text-gray-500">
               <div className="text-3xl mb-2">🤖</div>
@@ -240,33 +406,48 @@ export const AIInsights = ({ analytics }: AIInsightsProps) => {
               <p className="text-sm">More insights will appear as you trade more</p>
             </div>
           ) : (
-            insights.map((insight, index) => (
-              <div 
-                key={index}
-                className={`p-4 rounded-lg border transition-all hover:shadow-md ${getInsightStyle(insight.type)}`}
-              >
-                <div className="flex items-start gap-3">
-                  <div className={`text-xl ${getIconColor(insight.type)}`}>
-                    {insight.icon}
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-semibold mb-1">{insight.title}</h4>
-                    <p className="text-sm opacity-90">{insight.message}</p>
+            <div className="grid gap-3">
+              {insights.map((insight, index) => (
+                <div 
+                  key={index}
+                  className={`p-4 rounded-lg border transition-all hover:shadow-md ${getInsightStyle(insight.type)}`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className={`text-xl ${getIconColor(insight.type)}`}>
+                      {insight.icon}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h4 className="font-semibold">{insight.title}</h4>
+                        <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                          insight.priority === 1 ? 'bg-red-100 text-red-700' :
+                          insight.priority === 2 ? 'bg-yellow-100 text-yellow-700' :
+                          'bg-blue-100 text-blue-700'
+                        }`}>
+                          {insight.priority === 1 ? 'High' : insight.priority === 2 ? 'Medium' : 'Low'} Priority
+                        </span>
+                      </div>
+                      <p className="text-sm opacity-90">{insight.message}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))
+              ))}
+            </div>
           )}
           
           {/* Action buttons */}
           <div className="pt-4 border-t">
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <button className="text-sm text-blue-600 hover:text-blue-700 font-medium hover:underline transition-colors">
                 📊 View Detailed Analysis
               </button>
               <span className="text-gray-300">|</span>
               <button className="text-sm text-blue-600 hover:text-blue-700 font-medium hover:underline transition-colors">
                 🎯 Get Trading Recommendations
+              </button>
+              <span className="text-gray-300">|</span>
+              <button className="text-sm text-blue-600 hover:text-blue-700 font-medium hover:underline transition-colors">
+                📈 Pattern Recognition
               </button>
             </div>
           </div>
