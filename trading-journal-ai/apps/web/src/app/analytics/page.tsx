@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -10,9 +10,16 @@ import {
   Calendar,
   BarChart3,
   PieChart,
-  Activity
+  Activity,
+  RefreshCw
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/useAuth';
+import { useDashboardAnalytics } from '@/hooks/useDashboardAnalytics';
 import Navigation from '@/components/Navigation';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, PieChart as RechartsPieChart, Cell, Pie } from 'recharts';
+import Link from 'next/link';
+import { Loader2 } from 'lucide-react';
 
 interface TradeStats {
   totalTrades: number;
@@ -35,56 +42,45 @@ interface MonthlyData {
   trades: number;
 }
 
+const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#84cc16'];
+
 export default function AnalyticsPage() {
-  const [stats, setStats] = useState<TradeStats>({
-    totalTrades: 0,
-    totalPnL: 0,
-    winRate: 0,
-    avgWin: 0,
-    avgLoss: 0,
-    winningTrades: 0,
-    losingTrades: 0,
-    totalVolume: 0,
-    bestTrade: 0,
-    worstTrade: 0,
-    avgHoldingPeriod: 0,
-    profitFactor: 0
-  });
-  
-  const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { user, loading: authLoading } = useAuth();
+  const { analytics, loading: analyticsLoading, error, refetch } = useDashboardAnalytics();
 
-  useEffect(() => {
-    fetchAnalytics();
-  }, []);
+  const loading = authLoading || analyticsLoading;
 
-  const fetchAnalytics = async () => {
-    try {
-      setLoading(true);
-      
-      // Fetch from backend API
-      const response = await fetch('http://localhost:3001/api/trades/stats');
-      if (response.ok) {
-        const data = await response.json();
-        setStats(data.data);
-      }
-      
-      // Mock monthly data for now
-      setMonthlyData([
-        { month: 'Jan', pnl: 1200, trades: 15 },
-        { month: 'Feb', pnl: -800, trades: 12 },
-        { month: 'Mar', pnl: 2400, trades: 18 },
-        { month: 'Apr', pnl: 1800, trades: 16 },
-        { month: 'May', pnl: -400, trades: 10 },
-        { month: 'Jun', pnl: 3200, trades: 22 }
-      ]);
-      
-    } catch (error) {
-      console.error('Error fetching analytics:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Authentication check
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <Card className="w-96">
+          <CardHeader>
+            <CardTitle>Access Denied</CardTitle>
+            <CardDescription>Please log in to access analytics</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <Link href="/login">
+                <Button className="w-full">Go to Login</Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -141,7 +137,10 @@ export default function AnalyticsPage() {
         <Navigation />
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+            <div className="text-center">
+              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+              <p className="text-gray-600">Loading analytics...</p>
+            </div>
           </div>
         </div>
       </div>
@@ -154,46 +153,52 @@ export default function AnalyticsPage() {
       
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Trading Analytics</h1>
-          <p className="text-gray-600 mt-2">Comprehensive view of your trading performance</p>
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Trading Analytics</h1>
+            <p className="text-gray-600 mt-2">Comprehensive view of your trading performance</p>
+          </div>
+          <Button onClick={refetch} className="flex items-center gap-2">
+            <RefreshCw className="h-4 w-4" />
+            Refresh Data
+          </Button>
         </div>
 
         {/* Key Performance Indicators */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <StatCard
             title="Total P&L"
-            value={formatCurrency(stats.totalPnL)}
+            value={formatCurrency(analytics.totalPnL)}
             icon={DollarSign}
-            trend={stats.totalPnL >= 0 ? 'up' : 'down'}
-            trendValue={`${stats.totalTrades} trades`}
-            color={stats.totalPnL >= 0 ? 'green' : 'red'}
+            trend={analytics.totalPnL >= 0 ? 'up' : 'down'}
+            trendValue={`${analytics.totalTrades} trades`}
+            color={analytics.totalPnL >= 0 ? 'green' : 'red'}
           />
           
           <StatCard
             title="Win Rate"
-            value={formatPercentage(stats.winRate)}
+            value={formatPercentage(analytics.winRate / 100)}
             icon={Target}
-            trend={stats.winRate >= 0.5 ? 'up' : 'down'}
-            trendValue={`${stats.winningTrades}W / ${stats.losingTrades}L`}
+            trend={analytics.winRate >= 50 ? 'up' : 'down'}
+            trendValue={`${analytics.winningTrades}W / ${analytics.losingTrades}L`}
             color="blue"
           />
           
           <StatCard
             title="Total Trades"
-            value={stats.totalTrades.toString()}
+            value={analytics.totalTrades.toString()}
             icon={Activity}
-            trendValue={`${Math.round(stats.totalTrades / 6)} avg/month`}
+            trendValue={`${analytics.monthlyPerformance.length} months`}
             color="purple"
           />
           
           <StatCard
             title="Profit Factor"
-            value={stats.profitFactor.toFixed(2)}
+            value={analytics.profitFactor.toFixed(2)}
             icon={BarChart3}
-            trend={stats.profitFactor >= 1 ? 'up' : 'down'}
-            trendValue={stats.profitFactor >= 1 ? 'Profitable' : 'Unprofitable'}
-            color={stats.profitFactor >= 1 ? 'green' : 'red'}
+            trend={analytics.profitFactor >= 1 ? 'up' : 'down'}
+            trendValue={analytics.profitFactor >= 1 ? 'Profitable' : 'Unprofitable'}
+            color={analytics.profitFactor >= 1 ? 'green' : 'red'}
           />
         </div>
 
@@ -211,7 +216,7 @@ export default function AnalyticsPage() {
                 <div className="flex justify-between items-center p-4 bg-green-50 rounded-lg">
                   <div>
                     <p className="font-medium text-green-800">Average Win</p>
-                    <p className="text-2xl font-bold text-green-700">{formatCurrency(stats.avgWin)}</p>
+                    <p className="text-2xl font-bold text-green-700">{formatCurrency(analytics.averageWin)}</p>
                   </div>
                   <div className="text-green-600">
                     <TrendingUp className="h-8 w-8" />
@@ -221,7 +226,7 @@ export default function AnalyticsPage() {
                 <div className="flex justify-between items-center p-4 bg-red-50 rounded-lg">
                   <div>
                     <p className="font-medium text-red-800">Average Loss</p>
-                    <p className="text-2xl font-bold text-red-700">{formatCurrency(Math.abs(stats.avgLoss))}</p>
+                    <p className="text-2xl font-bold text-red-700">{formatCurrency(Math.abs(analytics.averageLoss))}</p>
                   </div>
                   <div className="text-red-600">
                     <TrendingDown className="h-8 w-8" />
@@ -231,11 +236,11 @@ export default function AnalyticsPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="text-center p-3 bg-blue-50 rounded-lg">
                     <p className="text-sm text-blue-600">Best Trade</p>
-                    <p className="text-lg font-bold text-blue-700">{formatCurrency(stats.bestTrade)}</p>
+                    <p className="text-lg font-bold text-blue-700">{formatCurrency(analytics.bestTrade)}</p>
                   </div>
                   <div className="text-center p-3 bg-orange-50 rounded-lg">
                     <p className="text-sm text-orange-600">Worst Trade</p>
-                    <p className="text-lg font-bold text-orange-700">{formatCurrency(stats.worstTrade)}</p>
+                    <p className="text-lg font-bold text-orange-700">{formatCurrency(analytics.worstTrade)}</p>
                   </div>
                 </div>
               </div>
@@ -252,7 +257,7 @@ export default function AnalyticsPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {monthlyData.map((month) => (
+                {analytics.monthlyPerformance.map((month) => (
                   <div key={month.month} className="flex items-center justify-between">
                     <div className="flex items-center w-20">
                       <span className="text-sm font-medium text-gray-600">{month.month}</span>
@@ -286,6 +291,97 @@ export default function AnalyticsPage() {
           </Card>
         </div>
 
+        {/* Charts Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          {/* P&L Over Time Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Activity className="h-5 w-5 mr-2" />
+                P&L Over Time
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={analytics.pnlOverTime}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" />
+                  <YAxis />
+                  <Tooltip formatter={(value) => [formatCurrency(Number(value)), '']} />
+                  <Legend />
+                  <Line type="monotone" dataKey="cumulative" stroke="#8884d8" strokeWidth={2} name="Cumulative P&L" />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          {/* Asset Distribution Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <PieChart className="h-5 w-5 mr-2" />
+                Asset Distribution
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <RechartsPieChart>
+                  <Pie
+                    data={analytics.assetTypeDistribution.map((entry, index) => ({
+                      ...entry,
+                      fill: entry.name === 'stock' ? '#3b82f6' :
+                            entry.name === 'crypto' ? '#f59e0b' :
+                            entry.name === 'forex' ? '#10b981' :
+                            entry.name === 'future' ? '#8b5cf6' :
+                            entry.name === 'option' ? '#ef4444' :
+                            COLORS[index % COLORS.length]
+                    }))}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }: any) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={80}
+                    dataKey="value"
+                  >
+                    {analytics.assetTypeDistribution.map((entry, index) => {
+                      const color = entry.name === 'stock' ? '#3b82f6' :
+                                   entry.name === 'crypto' ? '#f59e0b' :
+                                   entry.name === 'forex' ? '#10b981' :
+                                   entry.name === 'future' ? '#8b5cf6' :
+                                   entry.name === 'option' ? '#ef4444' :
+                                   COLORS[index % COLORS.length];
+                      return <Cell key={`cell-${index}`} fill={color} />;
+                    })}
+                  </Pie>
+                  <Tooltip formatter={(value) => [formatCurrency(Number(value)), 'Volume']} />
+                </RechartsPieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Monthly Performance Chart */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <BarChart3 className="h-5 w-5 mr-2" />
+              Monthly Performance
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={analytics.monthlyPerformance}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip formatter={(value) => [formatCurrency(Number(value)), 'P&L']} />
+                <Legend />
+                <Bar dataKey="pnl" fill="#8884d8" name="Monthly P&L" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
         {/* Additional Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card>
@@ -296,15 +392,15 @@ export default function AnalyticsPage() {
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Max Drawdown</span>
-                  <span className="font-medium text-red-600">-12.5%</span>
+                  <span className="font-medium text-red-600">{formatCurrency(analytics.maxDrawdown)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Sharpe Ratio</span>
-                  <span className="font-medium">1.24</span>
+                  <span className="text-gray-600">Profit Factor</span>
+                  <span className="font-medium">{analytics.profitFactor.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Risk/Reward Ratio</span>
-                  <span className="font-medium">1.8:1</span>
+                  <span className="text-gray-600">Total Volume</span>
+                  <span className="font-medium">{formatCurrency(analytics.totalVolume)}</span>
                 </div>
               </div>
             </CardContent>
@@ -317,16 +413,16 @@ export default function AnalyticsPage() {
             <CardContent>
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Avg Hold Time</span>
-                  <span className="font-medium">{stats.avgHoldingPeriod} days</span>
+                  <span className="text-gray-600">Active Positions</span>
+                  <span className="font-medium">{analytics.activePositions}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Most Active Day</span>
-                  <span className="font-medium">Wednesday</span>
+                  <span className="text-gray-600">Recent Trades</span>
+                  <span className="font-medium">{analytics.recentTrades.length}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Preferred Asset</span>
-                  <span className="font-medium">Stocks (65%)</span>
+                  <span className="text-gray-600">Asset Types</span>
+                  <span className="font-medium">{analytics.assetTypeDistribution.length}</span>
                 </div>
               </div>
             </CardContent>
@@ -340,11 +436,11 @@ export default function AnalyticsPage() {
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Total Volume</span>
-                  <span className="font-medium">{formatCurrency(stats.totalVolume)}</span>
+                  <span className="font-medium">{formatCurrency(analytics.totalVolume)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Avg Trade Size</span>
-                  <span className="font-medium">{formatCurrency(stats.totalVolume / stats.totalTrades || 0)}</span>
+                  <span className="font-medium">{formatCurrency(analytics.totalVolume / analytics.totalTrades || 0)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Largest Position</span>

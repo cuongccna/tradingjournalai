@@ -39,9 +39,16 @@ export default function TradeEditModal({ trade, isOpen, onClose, onUpdated }: Pr
 
   useEffect(() => {
     if (trade) {
+      // Map backend assetType to frontend values
+      const frontendAssetType = trade.assetType === 'stock' ? 'stocks' :
+                               trade.assetType === 'crypto' ? 'crypto' :
+                               trade.assetType === 'forex' ? 'forex' :
+                               trade.assetType === 'future' ? 'commodities' :
+                               trade.assetType === 'option' ? 'options' : 'stocks';
+      
       setFormData({
         symbol: trade.symbol,
-        assetType: trade.assetType,
+        assetType: frontendAssetType,
         side: trade.side,
         quantity: trade.quantity,
         entryPrice: trade.entryPrice,
@@ -62,7 +69,21 @@ export default function TradeEditModal({ trade, isOpen, onClose, onUpdated }: Pr
     
     try {
       setLoading(true);
-      const response = await api.trades.update(trade.id, formData);
+      
+      // Map frontend data format to backend API format (same as TradeEntryForm)
+      const mappedAssetType = formData.assetType === 'stocks' ? 'stock' : 
+                             formData.assetType === 'crypto' ? 'crypto' :
+                             formData.assetType === 'forex' ? 'forex' :
+                             formData.assetType === 'commodities' ? 'future' :
+                             formData.assetType === 'options' ? 'option' : 'stock';
+      
+      const updatePayload = {
+        ...formData,
+        assetType: mappedAssetType,
+        symbol: formData.symbol?.toUpperCase() || ''
+      };
+      
+      const response = await api.trades.update(trade.id, updatePayload);
       
       if (response.data.success) {
         toast.success('Trade updated successfully!');

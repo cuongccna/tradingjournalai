@@ -8,13 +8,33 @@ export class TradeService {
   async createTrade(tradeData: Omit<Trade, 'id' | 'createdAt' | 'updatedAt'>): Promise<Trade> {
     try {
       const now = new Date();
+      
+      // Calculate P&L if exitPrice is provided
+      let pnl = tradeData.pnl;
+      if (tradeData.exitPrice && pnl === undefined) {
+        const calculatedPnL = TradeService.calculatePnL(tradeData as Trade);
+        if (calculatedPnL !== null) {
+          pnl = calculatedPnL;
+        }
+      }
+      
+      // Determine status if not provided
+      const status = tradeData.status || (tradeData.exitPrice ? 'closed' : 'open');
+      
       const trade: Omit<Trade, 'id'> = {
         ...tradeData,
+        pnl: pnl || undefined, // Only set if not undefined
+        status,
         createdAt: now,
         updatedAt: now
       };
 
-      const docRef = await this.tradesCollection.add(trade);
+      // Remove undefined values before saving to Firestore
+      const cleanTrade = Object.fromEntries(
+        Object.entries(trade).filter(([_, value]) => value !== undefined)
+      );
+
+      const docRef = await this.tradesCollection.add(cleanTrade);
       const createdTrade = { id: docRef.id, ...trade };
 
       // Update user's trade statistics
@@ -39,8 +59,8 @@ export class TradeService {
         query = query.where('status', '==', options.status);
       }
 
-      // Order by creation date (newest first)
-      query = query.orderBy('createdAt', 'desc');
+      // TEMPORARY: Remove orderBy to avoid index requirement
+      // query = query.orderBy('createdAt', 'desc');
 
       if (options?.limit) {
         query = query.limit(options.limit);
@@ -51,10 +71,30 @@ export class TradeService {
       }
 
       const snapshot = await query.get();
-      return snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      } as Trade));
+      const trades = snapshot.docs.map(doc => {
+        const tradeData = doc.data() as Omit<Trade, 'id'>;
+        const trade: Trade = {
+          id: doc.id,
+          ...tradeData
+        };
+        
+        // Calculate P&L if not already calculated
+        if (trade.exitPrice && trade.pnl === undefined) {
+          const calculatedPnL = TradeService.calculatePnL(trade);
+          if (calculatedPnL !== null) {
+            trade.pnl = calculatedPnL;
+          }
+        }
+        
+        // Determine status if not set
+        if (!trade.status) {
+          trade.status = trade.exitPrice ? 'closed' : 'open';
+        }
+        
+        return trade;
+      });
+      
+      return trades;
     } catch (error) {
       console.error('Error getting trades:', error);
       throw new Error('Failed to get trades');
@@ -101,6 +141,17 @@ export class TradeService {
         ...updateData,
         updatedAt: new Date()
       };
+      
+      // Calculate P&L if exitPrice is being updated
+      if (updateData.exitPrice !== undefined) {
+        const tempTrade = { ...tradeData, ...updatedTrade } as Trade;
+        const calculatedPnL = TradeService.calculatePnL(tempTrade);
+        if (calculatedPnL !== null) {
+          updatedTrade.pnl = calculatedPnL;
+        }
+        // Update status when exit price is set
+        updatedTrade.status = updateData.exitPrice ? 'closed' : 'open';
+      }
 
       await tradeDoc.update(updatedTrade);
 

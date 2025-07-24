@@ -43,6 +43,7 @@ export const useDashboardAnalytics = () => {
         if (Array.isArray(response)) {
           setTrades(response);
         } else {
+          console.warn('⚠️ Unexpected response format:', response);
           setTrades([]);
         }
       } catch (error) {
@@ -94,11 +95,9 @@ export const useDashboardAnalytics = () => {
     const totalPnL = closedTrades.reduce((sum, trade) => sum + (trade.pnl || 0), 0);
     // Support both 'size' and 'quantity' field names
     const totalVolume = trades.reduce((sum, trade) => {
-      const quantity = (trade as any).size || (trade as any).quantity || 0;
+      const quantity = (trade as any).quantity || (trade as any).size || 0;
       return sum + (quantity * trade.entryPrice);
-    }, 0);
-
-    // Win/Loss calculations
+    }, 0);    // Win/Loss calculations
     const winningTrades = closedTrades.filter(trade => (trade.pnl || 0) > 0);
     const losingTrades = closedTrades.filter(trade => (trade.pnl || 0) < 0);
     const winRate = closedTrades.length > 0 ? (winningTrades.length / closedTrades.length) * 100 : 0;
@@ -124,12 +123,24 @@ export const useDashboardAnalytics = () => {
 
     // Max drawdown calculation
     const sortedTrades = [...closedTrades].sort((a, b) => {
-      // Safe date parsing with validation
-      const dateValueA = (a as any).entryDateTime || (a as any).entryDate || Date.now();
-      const dateValueB = (b as any).entryDateTime || (b as any).entryDate || Date.now();
+      // Safe date parsing with Firebase timestamp support
+      let dateA, dateB;
       
-      const dateA = new Date(dateValueA);
-      const dateB = new Date(dateValueB);
+      const dateValueA = (a as any).entryDate || (a as any).entryDateTime || (a as any).createdAt;
+      const dateValueB = (b as any).entryDate || (b as any).entryDateTime || (b as any).createdAt;
+      
+      // Handle Firebase timestamp format
+      if (dateValueA && typeof dateValueA === 'object' && dateValueA._seconds) {
+        dateA = new Date(dateValueA._seconds * 1000);
+      } else {
+        dateA = new Date(dateValueA || Date.now());
+      }
+      
+      if (dateValueB && typeof dateValueB === 'object' && dateValueB._seconds) {
+        dateB = new Date(dateValueB._seconds * 1000);
+      } else {
+        dateB = new Date(dateValueB || Date.now());
+      }
       
       // Check if dates are valid
       if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
@@ -158,12 +169,19 @@ export const useDashboardAnalytics = () => {
     const pnlOverTime = sortedTrades.map((trade, index) => {
       const cumulative = sortedTrades.slice(0, index + 1).reduce((sum, t) => sum + (t.pnl || 0), 0);
       
-      // Safe date parsing
-      const dateValue = (trade as any).entryDateTime || (trade as any).entryDate || Date.now();
-      const tradeDate = new Date(dateValue);
+      // Safe date parsing with Firebase timestamp support
+      let tradeDate;
+      const dateValue = (trade as any).entryDate || (trade as any).entryDateTime || (trade as any).createdAt;
+      
+      // Handle Firebase timestamp format
+      if (dateValue && typeof dateValue === 'object' && dateValue._seconds) {
+        tradeDate = new Date(dateValue._seconds * 1000);
+      } else {
+        tradeDate = new Date(dateValue || Date.now());
+      }
       
       if (isNaN(tradeDate.getTime())) {
-        tradeDate.setTime(Date.now()); // Fallback to current time
+        tradeDate = new Date(); // Fallback to current time
       }
       
       return {
@@ -181,7 +199,7 @@ export const useDashboardAnalytics = () => {
       }
       acc[type].count++;
       // Support both 'size' and 'quantity' field names  
-      const quantity = (trade as any).size || (trade as any).quantity || 0;
+      const quantity = (trade as any).quantity || (trade as any).size || 0;
       acc[type].volume += quantity * trade.entryPrice;
       return acc;
     }, {} as Record<string, { count: number; volume: number }>);
@@ -194,12 +212,19 @@ export const useDashboardAnalytics = () => {
 
     // Monthly performance
     const monthlyData = closedTrades.reduce((acc, trade) => {
-      // Safe date parsing
-      const dateValue = (trade as any).entryDateTime || (trade as any).entryDate || Date.now();
-      const tradeDate = new Date(dateValue);
+      // Safe date parsing with Firebase timestamp support
+      let tradeDate;
+      const dateValue = (trade as any).entryDate || (trade as any).entryDateTime || (trade as any).createdAt;
+      
+      // Handle Firebase timestamp format
+      if (dateValue && typeof dateValue === 'object' && dateValue._seconds) {
+        tradeDate = new Date(dateValue._seconds * 1000);
+      } else {
+        tradeDate = new Date(dateValue || Date.now());
+      }
       
       if (isNaN(tradeDate.getTime())) {
-        tradeDate.setTime(Date.now()); // Fallback to current time
+        tradeDate = new Date(); // Fallback to current time
       }
       
       const month = tradeDate.toISOString().slice(0, 7); // YYYY-MM
@@ -222,12 +247,24 @@ export const useDashboardAnalytics = () => {
     // Recent trades (last 5)
     const recentTrades = [...trades]
       .sort((a, b) => {
-        // Safe date parsing for recent trades sorting
-        const dateValueA = (a as any).entryDateTime || (a as any).entryDate || Date.now();
-        const dateValueB = (b as any).entryDateTime || (b as any).entryDate || Date.now();
+        // Safe date parsing with Firebase timestamp support
+        let dateA, dateB;
         
-        const dateA = new Date(dateValueA);
-        const dateB = new Date(dateValueB);
+        const dateValueA = (a as any).entryDate || (a as any).entryDateTime || (a as any).createdAt;
+        const dateValueB = (b as any).entryDate || (b as any).entryDateTime || (b as any).createdAt;
+        
+        // Handle Firebase timestamp format
+        if (dateValueA && typeof dateValueA === 'object' && dateValueA._seconds) {
+          dateA = new Date(dateValueA._seconds * 1000);
+        } else {
+          dateA = new Date(dateValueA || Date.now());
+        }
+        
+        if (dateValueB && typeof dateValueB === 'object' && dateValueB._seconds) {
+          dateB = new Date(dateValueB._seconds * 1000);
+        } else {
+          dateB = new Date(dateValueB || Date.now());
+        }
         
         // Check if dates are valid
         if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {

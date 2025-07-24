@@ -86,16 +86,17 @@ interface AssetDistributionChartProps {
 
 export const AssetDistributionChart = ({ data }: AssetDistributionChartProps) => {
   const COLORS = {
-    STOCK: '#3b82f6',
-    FOREX: '#10b981', 
-    CRYPTO: '#f59e0b',
-    FUTURES: '#8b5cf6',
-    OPTIONS: '#ef4444'
+    stock: '#3b82f6',      // Blue
+    forex: '#10b981',      // Green
+    crypto: '#f59e0b',     // Amber
+    future: '#8b5cf6',     // Purple  
+    option: '#ef4444',     // Red
+    default: '#6b7280'     // Gray
   };
 
   const pieData = data.map(item => ({
     ...item,
-    color: COLORS[item.name as keyof typeof COLORS] || '#6b7280'
+    color: COLORS[item.name.toLowerCase() as keyof typeof COLORS] || COLORS.default
   }));
 
   return (

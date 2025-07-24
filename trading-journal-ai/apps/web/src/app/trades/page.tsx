@@ -204,33 +204,33 @@ export default function TradesPage() {
   // Helper functions for asset types
   const getAssetTypeIcon = (assetType: string) => {
     switch (assetType) {
-      case 'stocks': return <BarChart3 className="h-5 w-5 text-blue-600" />;
+      case 'stock': return <BarChart3 className="h-5 w-5 text-blue-600" />;
       case 'crypto': return <Bitcoin className="h-5 w-5 text-orange-600" />;
       case 'forex': return <DollarSign className="h-5 w-5 text-green-600" />;
-      case 'commodities': return <Coins className="h-5 w-5 text-yellow-600" />;
-      case 'options': return <Settings className="h-5 w-5 text-purple-600" />;
+      case 'future': return <Coins className="h-5 w-5 text-yellow-600" />;
+      case 'option': return <Settings className="h-5 w-5 text-purple-600" />;
       default: return <AlertTriangle className="h-5 w-5 text-gray-600" />;
     }
   };
 
   const getAssetTypeColor = (assetType: string) => {
     switch (assetType) {
-      case 'stocks': return 'bg-blue-100';
+      case 'stock': return 'bg-blue-100';
       case 'crypto': return 'bg-orange-100';
       case 'forex': return 'bg-green-100';
-      case 'commodities': return 'bg-yellow-100';
-      case 'options': return 'bg-purple-100';
+      case 'future': return 'bg-yellow-100';
+      case 'option': return 'bg-purple-100';
       default: return 'bg-gray-100';
     }
   };
 
   const getAssetTypeLabel = (assetType: string) => {
     switch (assetType) {
-      case 'stocks': return 'Stocks & ETFs';
+      case 'stock': return 'Stocks & ETFs';
       case 'crypto': return 'Cryptocurrency';
       case 'forex': return 'Forex';
-      case 'commodities': return 'Commodities';
-      case 'options': return 'Options';
+      case 'future': return 'Commodities';
+      case 'option': return 'Options';
       default: return 'Other Assets';
     }
   };
@@ -277,8 +277,13 @@ export default function TradesPage() {
     try {
       setLoading(true);
       const response = await api.trades.list();
-      if (response.data.success) {
-        setTrades(response.data.data || []);
+      
+      // API returns array directly after processing in api.ts
+      if (Array.isArray(response)) {
+        setTrades(response);
+      } else {
+        console.warn('⚠️ Unexpected response format:', response);
+        setTrades([]);
       }
     } catch (error: any) {
       console.error('Error fetching trades:', error);

@@ -78,13 +78,18 @@ export default function TradeEntryForm({ onClose, onSubmit }: Props) {
   const handleSubmit = async () => {
     try {
       // Map frontend data format to backend API format
+      const mappedAssetType = tradeData.assetType === 'stocks' ? 'stock' : 
+                             tradeData.assetType === 'crypto' ? 'crypto' :
+                             tradeData.assetType === 'forex' ? 'forex' :
+                             tradeData.assetType === 'commodities' ? 'future' :
+                             tradeData.assetType === 'options' ? 'option' : 'stock';
+      
+      console.log('🔄 Form data:', tradeData);
+      console.log('🔄 Mapped assetType:', mappedAssetType);
+      
       const tradePayload = {
         symbol: tradeData.symbol.toUpperCase(),
-        assetType: tradeData.assetType === 'stocks' ? 'stock' : 
-                   tradeData.assetType === 'crypto' ? 'crypto' :
-                   tradeData.assetType === 'forex' ? 'forex' :
-                   tradeData.assetType === 'commodities' ? 'future' :
-                   tradeData.assetType === 'options' ? 'option' : 'stock',
+        assetType: mappedAssetType,
         side: tradeData.side,
         quantity: tradeData.quantity,
         entryPrice: tradeData.entryPrice,
@@ -97,6 +102,7 @@ export default function TradeEntryForm({ onClose, onSubmit }: Props) {
         tags: tradeData.tags
       };
 
+      console.log('📤 Payload to backend:', tradePayload);
       const response = await api.trades.create(tradePayload);
       
       if (response.data.success) {

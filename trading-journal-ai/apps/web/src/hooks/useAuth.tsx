@@ -37,11 +37,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       if (user) {
         try {
-          // Try to get profile from backend API
-          const response = await api.auth.getProfile();
-          setUserProfile(response.data.data);
+          // Try to get profile from backend API if available
+          try {
+            const response = await api.auth.getProfile();
+            setUserProfile(response.data.data);
+          } catch (apiError) {
+            console.warn('Backend profile API not available, using Firebase user data');
+            // Fallback to Firebase user data
+            setUserProfile({
+              uid: user.uid,
+              email: user.email || '',
+              displayName: user.displayName || '',
+              planId: 'free', // Default plan
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            });
+          }
         } catch (error) {
-          console.warn('Backend API not available, using Firebase user data:', error);
+          console.warn('Error in auth flow:', error);
           // Fallback to Firebase user data
           setUserProfile({
             uid: user.uid,
