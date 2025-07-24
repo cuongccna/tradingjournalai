@@ -158,7 +158,7 @@ importers:
         specifier: ^2.1.0
         version: 2.1.1
       date-fns:
-        specifier: ^3.0.0
+        specifier: ^3.6.0
         version: 3.6.0
       firebase:
         specifier: ^10.7.0
@@ -182,7 +182,7 @@ importers:
         specifier: ^2.5.2
         version: 2.5.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       recharts:
-        specifier: ^2.10.0
+        specifier: ^2.15.4
         version: 2.15.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       tailwind-merge:
         specifier: ^2.2.0

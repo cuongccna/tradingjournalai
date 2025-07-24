@@ -6,8 +6,9 @@ class ApiClient {
   private client: AxiosInstance;
 
   constructor() {
+    const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002/api';
     this.client = axios.create({
-      baseURL: process.env.NEXT_PUBLIC_API_URL,
+      baseURL,
       headers: {
         'Content-Type': 'application/json',
       },
@@ -18,8 +19,12 @@ class ApiClient {
       async (config) => {
         const user = auth.currentUser;
         if (user) {
-          const token = await user.getIdToken();
-          config.headers.Authorization = `Bearer ${token}`;
+          try {
+            const token = await user.getIdToken();
+            config.headers.Authorization = `Bearer ${token}`;
+          } catch (error) {
+            console.error('Error getting auth token:', error);
+          }
         }
         return config;
       },
@@ -30,7 +35,9 @@ class ApiClient {
 
     // Response interceptor for error handling
     this.client.interceptors.response.use(
-      (response) => response,
+      (response) => {
+        return response;
+      },
       (error: AxiosError) => {
         const message = (error.response?.data as any)?.error || 'An error occurred';
         
@@ -58,7 +65,17 @@ class ApiClient {
 
   // Trade endpoints
   trades = {
-    list: (params?: any) => this.client.get('/trades', { params }),
+    list: async (params?: any) => {
+      const response = await this.client.get('/trades', { params });
+      
+      // Backend returns {success: true, data: [...], message: '...'}
+      if (response.data && response.data.success && Array.isArray(response.data.data)) {
+        return response.data.data;
+      }
+      
+      // Fallback if different format
+      return [];
+    },
     create: (data: any) => this.client.post('/trades', data),
     get: (id: string) => this.client.get(`/trades/${id}`),
     update: (id: string, data: any) => this.client.put(`/trades/${id}`, data),

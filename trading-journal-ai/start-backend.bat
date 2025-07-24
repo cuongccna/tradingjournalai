@@ -1,0 +1,9 @@
+@echo off
+echo Starting Trading Journal AI Backend...
+cd /d "d:\projects\tradingjournalai\trading-journal-ai\apps\backend"
+echo Current directory: %CD%
+echo Installing dependencies...
+call pnpm install
+echo Starting development server...
+call pnpm dev
+pause
