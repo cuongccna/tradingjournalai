@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingUp, TrendingDown, Calendar, DollarSign, BarChart3, FileText, X } from 'lucide-react';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 
 interface Trade {
   id: string;
@@ -28,6 +29,7 @@ interface Props {
 }
 
 export default function TradeViewModal({ trade, isOpen, onClose }: Props) {
+  const { t } = useLanguage();
   if (!trade) return null;
 
   const calculatePnL = (trade: Trade) => {
@@ -90,26 +92,26 @@ export default function TradeViewModal({ trade, isOpen, onClose }: Props) {
               <div className="border rounded-lg p-4">
                 <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
                   <DollarSign className="h-4 w-4" />
-                  Trade Details
+                  {t.trades.tradeDetails}
                 </h3>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-500">Asset Type:</span>
+                    <span className="text-gray-500">{t.trades.assetType}:</span>
                     <span className="font-medium capitalize">{trade.assetType}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500">Quantity:</span>
+                    <span className="text-gray-500">{t.trades.quantity}:</span>
                     <span className="font-medium">{trade.quantity}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500">Entry Price:</span>
+                    <span className="text-gray-500">{t.trades.entryPrice}:</span>
                     <span className="font-medium">{formatCurrency(trade.entryPrice)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500">Exit Price:</span>
+                    <span className="text-gray-500">{t.trades.exitPrice}:</span>
                     <span className="font-medium">
                       {trade.exitPrice ? formatCurrency(trade.exitPrice) : (
-                        <span className="text-blue-600">Open Position</span>
+                        <span className="text-blue-600">{t.trades.openPosition}</span>
                       )}
                     </span>
                   </div>
@@ -121,15 +123,15 @@ export default function TradeViewModal({ trade, isOpen, onClose }: Props) {
               <div className="border rounded-lg p-4">
                 <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
                   <Calendar className="h-4 w-4" />
-                  Timeline
+                  {t.trades.timeline}
                 </h3>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-500">Entry Date:</span>
+                    <span className="text-gray-500">{t.trades.entryDate}:</span>
                     <span className="font-medium">{formatDate(trade.entryDate)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500">Exit Date:</span>
+                    <span className="text-gray-500">{t.trades.exitDate}:</span>
                     <span className="font-medium">
                       {trade.exitDate ? formatDate(trade.exitDate) : (
                         <span className="text-blue-600">-</span>
@@ -137,11 +139,11 @@ export default function TradeViewModal({ trade, isOpen, onClose }: Props) {
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500">Status:</span>
+                    <span className="text-gray-500">{t.trades.status}:</span>
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                       trade.exitPrice ? 'bg-gray-100 text-gray-800' : 'bg-blue-100 text-blue-800'
                     }`}>
-                      {trade.exitPrice ? 'Closed' : 'Open'}
+                      {trade.exitPrice ? t.trades.closed : t.trades.open}
                     </span>
                   </div>
                 </div>
@@ -156,7 +158,7 @@ export default function TradeViewModal({ trade, isOpen, onClose }: Props) {
             }`}>
               <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
                 {isProfit ? <TrendingUp className="h-4 w-4 text-green-600" /> : <TrendingDown className="h-4 w-4 text-red-600" />}
-                Profit & Loss
+                {t.trades.profitLoss}
               </h3>
               <div className="text-3xl font-bold">
                 <span className={isProfit ? 'text-green-600' : 'text-red-600'}>
@@ -164,7 +166,7 @@ export default function TradeViewModal({ trade, isOpen, onClose }: Props) {
                 </span>
               </div>
               <div className="text-sm text-gray-600 mt-1">
-                {((pnl / (trade.entryPrice * trade.quantity)) * 100).toFixed(2)}% return
+                {((pnl / (trade.entryPrice * trade.quantity)) * 100).toFixed(2)}% {t.trades.returnPercentage}
               </div>
             </div>
           )}
@@ -172,7 +174,7 @@ export default function TradeViewModal({ trade, isOpen, onClose }: Props) {
           {/* Strategy */}
           {trade.strategy && (
             <div className="border rounded-lg p-4">
-              <h3 className="font-semibold text-gray-900 mb-3">Strategy</h3>
+              <h3 className="font-semibold text-gray-900 mb-3">{t.trades.strategy}</h3>
               <div className="inline-block px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full font-medium">
                 📊 {trade.strategy}
               </div>
@@ -182,7 +184,7 @@ export default function TradeViewModal({ trade, isOpen, onClose }: Props) {
           {/* Tags */}
           {trade.tags && trade.tags.length > 0 && (
             <div className="border rounded-lg p-4">
-              <h3 className="font-semibold text-gray-900 mb-3">Tags</h3>
+              <h3 className="font-semibold text-gray-900 mb-3">{t.trades.tags}</h3>
               <div className="flex flex-wrap gap-2">
                 {trade.tags.map((tag, index) => (
                   <span 
@@ -206,7 +208,7 @@ export default function TradeViewModal({ trade, isOpen, onClose }: Props) {
             <div className="border rounded-lg p-4">
               <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
                 <FileText className="h-4 w-4" />
-                Notes
+                {t.trades.notes}
               </h3>
               <div className="text-sm text-gray-700 bg-gray-50 rounded-lg p-3">
                 {trade.notes}
@@ -217,7 +219,7 @@ export default function TradeViewModal({ trade, isOpen, onClose }: Props) {
 
           <div className="flex justify-end gap-3 pt-4 border-t">
             <Button variant="outline" onClick={onClose}>
-              Close
+              {t.trades.close}
             </Button>
           </div>
         </CardContent>

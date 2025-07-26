@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 import toast from 'react-hot-toast';
 import TradeEntryForm from '@/components/trades/TradeEntryForm';
 import TradeViewModal from '@/components/trades/TradeViewModal';
@@ -52,9 +53,10 @@ interface TradeCardProps {
   onView: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  t: any; // translation object
 }
 
-function TradeCard({ trade, onView, onEdit, onDelete }: TradeCardProps) {
+function TradeCard({ trade, onView, onEdit, onDelete, t }: TradeCardProps) {
   const calculatePnL = (trade: Trade) => {
     if (!trade.exitPrice) return null;
     const multiplier = trade.side === 'buy' ? 1 : -1;
@@ -112,23 +114,23 @@ function TradeCard({ trade, onView, onEdit, onDelete }: TradeCardProps) {
         {/* Trade Details */}
         <div className="grid grid-cols-2 gap-3 text-sm mb-3">
           <div>
-            <span className="text-gray-500">Quantity:</span>
+            <span className="text-gray-500">{t.trades.quantity}:</span>
             <p className="font-semibold">{trade.quantity}</p>
           </div>
           <div>
-            <span className="text-gray-500">Entry:</span>
+            <span className="text-gray-500">{t.trades.entry}:</span>
             <p className="font-semibold">{formatCurrency(trade.entryPrice)}</p>
           </div>
           <div>
-            <span className="text-gray-500">Exit:</span>
+            <span className="text-gray-500">{t.trades.exit}:</span>
             <p className="font-semibold">
               {trade.exitPrice ? formatCurrency(trade.exitPrice) : (
-                <span className="text-blue-600 font-medium">Open</span>
+                <span className="text-blue-600 font-medium">{t.trades.open}</span>
               )}
             </p>
           </div>
           <div>
-            <span className="text-gray-500">P&L:</span>
+            <span className="text-gray-500">{t.trades.pnl}:</span>
             {pnl !== null ? (
               <p className={`font-bold flex items-center gap-1 ${isProfit ? 'text-green-600' : 'text-red-600'}`}>
                 {isProfit ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
@@ -158,7 +160,7 @@ function TradeCard({ trade, onView, onEdit, onDelete }: TradeCardProps) {
             ))}
             {trade.tags.length > 4 && (
               <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs">
-                +{trade.tags.length - 4} more
+                +{trade.tags.length - 4} {t.trades.more}
               </span>
             )}
           </div>
@@ -172,7 +174,7 @@ function TradeCard({ trade, onView, onEdit, onDelete }: TradeCardProps) {
               ? 'bg-gray-100 text-gray-800' 
               : 'bg-blue-100 text-blue-800'
           }`}>
-            {trade.exitPrice ? 'Closed' : 'Open'}
+            {trade.exitPrice ? t.trades.closed : t.trades.open}
           </span>
         </div>
 
@@ -190,6 +192,7 @@ function TradeCard({ trade, onView, onEdit, onDelete }: TradeCardProps) {
 }
 
 export default function TradesPage() {
+  const { t } = useLanguage();
   const { user } = useAuth();
   const [showForm, setShowForm] = useState(false);
   const [trades, setTrades] = useState<Trade[]>([]);
@@ -226,12 +229,12 @@ export default function TradesPage() {
 
   const getAssetTypeLabel = (assetType: string) => {
     switch (assetType) {
-      case 'stock': return 'Stocks & ETFs';
-      case 'crypto': return 'Cryptocurrency';
-      case 'forex': return 'Forex';
-      case 'future': return 'Commodities';
-      case 'option': return 'Options';
-      default: return 'Other Assets';
+      case 'stock': return t.trades.stocksEtfs;
+      case 'crypto': return t.trades.cryptocurrency;
+      case 'forex': return t.trades.forex;
+      case 'future': return t.trades.commodities;
+      case 'option': return t.trades.options;
+      default: return t.trades.otherAssets;
     }
   };
 
@@ -254,15 +257,15 @@ export default function TradesPage() {
   };
 
   const handleDeleteTrade = async (tradeId: string) => {
-    if (!confirm('Are you sure you want to delete this trade?')) return;
+    if (!confirm(t.trades.confirmDelete)) return;
     
     try {
       await api.trades.delete(tradeId);
       setTrades(prev => prev.filter(t => t.id !== tradeId));
-      toast.success('Trade deleted successfully');
+      toast.success(t.trades.tradeDeletedSuccess);
     } catch (error) {
       console.error('Error deleting trade:', error);
-      toast.error('Failed to delete trade');
+      toast.error(t.trades.failedToDeleteTrade);
     }
   };
 
@@ -367,22 +370,22 @@ export default function TradesPage() {
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Trade Management</h1>
-            <p className="text-gray-600 mt-2">Track and analyze your trading positions</p>
+            <h1 className="text-3xl font-bold text-gray-900">{t.trades.title}</h1>
+            <p className="text-gray-600 mt-2">{t.trades.subtitle}</p>
           </div>
           <Button 
             onClick={() => setShowForm(true)}
             className="flex items-center gap-2"
           >
             <Plus className="h-4 w-4" />
-            Add New Trade
+            {t.trades.addTrade}
           </Button>
         </div>
 
         {/* Filters & Search */}
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle className="text-lg">Filters & Search</CardTitle>
+            <CardTitle className="text-lg">{t.trades.filtersSearch}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-4">
@@ -390,7 +393,7 @@ export default function TradesPage() {
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <Input
-                    placeholder="Search trades by symbol, strategy, or tags..."
+                    placeholder={t.trades.searchPlaceholder}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10"
@@ -404,9 +407,9 @@ export default function TradesPage() {
                   onChange={(e) => setFilterStatus(e.target.value as any)}
                   className="px-3 py-2 border rounded-md bg-white"
                 >
-                  <option value="all">All Trades</option>
-                  <option value="open">Open Positions</option>
-                  <option value="closed">Closed Positions</option>
+                  <option value="all">{t.trades.allTrades}</option>
+                  <option value="open">{t.trades.openPositions}</option>
+                  <option value="closed">{t.trades.closedTrades}</option>
                 </select>
                 
                 <select
@@ -414,9 +417,9 @@ export default function TradesPage() {
                   onChange={(e) => setSortBy(e.target.value as any)}
                   className="px-3 py-2 border rounded-md bg-white"
                 >
-                  <option value="date">Sort by Date</option>
-                  <option value="symbol">Sort by Symbol</option>
-                  <option value="pnl">Sort by P&L</option>
+                  <option value="date">{t.trades.sortByDate}</option>
+                  <option value="symbol">{t.trades.sortBySymbol}</option>
+                  <option value="pnl">{t.trades.sortByPnl}</option>
                 </select>
               </div>
             </div>
@@ -434,16 +437,16 @@ export default function TradesPage() {
               <div className="text-gray-400 mb-4">
                 <TrendingUp className="h-12 w-12 mx-auto" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No trades found</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">{t.trades.noTradesFound}</h3>
               <p className="text-gray-500 mb-4">
                 {trades.length === 0 
-                  ? "Start by adding your first trade to begin tracking your performance."
-                  : "Try adjusting your search or filter criteria."
+                  ? t.trades.startByAdding
+                  : t.trades.adjustCriteria
                 }
               </p>
               <Button onClick={() => setShowForm(true)} className="flex items-center gap-2">
                 <Plus className="h-4 w-4" />
-                Add Your First Trade
+                {t.trades.addFirstTrade}
               </Button>
             </div>
           ) : (
@@ -468,12 +471,12 @@ export default function TradesPage() {
                           {getAssetTypeLabel(assetType)}
                         </h3>
                         <p className="text-sm text-gray-600">
-                          {assetTrades.length} trades • {assetTrades.filter(t => !t.exitPrice).length} open
+                          {assetTrades.length} {t.trades.tradesCount} • {assetTrades.filter(t => !t.exitPrice).length} {t.trades.openCount}
                         </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-sm text-gray-500">Total P&L</div>
+                      <div className="text-sm text-gray-500">{t.trades.totalPnl}</div>
                       <div className={`text-lg font-bold ${
                         getTotalPnL(assetTrades) >= 0 ? 'text-green-600' : 'text-red-600'
                       }`}>
@@ -491,6 +494,7 @@ export default function TradesPage() {
                         onView={() => handleViewTrade(trade)}
                         onEdit={() => handleEditTrade(trade)}
                         onDelete={() => handleDeleteTrade(trade.id)}
+                        t={t}
                       />
                     ))}
                   </div>

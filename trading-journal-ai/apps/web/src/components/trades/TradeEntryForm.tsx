@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { X, ArrowLeft, ArrowRight, Check } from 'lucide-react';
 import { api } from '@/lib/api';
 import toast from 'react-hot-toast';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 // import AssetTypeSelection from './AssetTypeSelection';
 // import TradeNotesEditor from './TradeNotesEditor';
 
@@ -39,13 +40,15 @@ interface Props {
   onSubmit?: (data: TradeData) => void;
 }
 
-const STEPS = [
-  { id: 1, title: 'Asset Type', description: 'Select asset type and symbol' },
-  { id: 2, title: 'Trade Details', description: 'Enter trade execution details' },
-  { id: 3, title: 'Analysis & Notes', description: 'Add strategy and notes' }
-];
-
 export default function TradeEntryForm({ onClose, onSubmit }: Props) {
+  const { t } = useLanguage();
+  
+  const STEPS = [
+    { id: 1, title: t.trades.assetTypeStep, description: t.trades.assetTypeStepDesc },
+    { id: 2, title: t.trades.tradeDetailsStep, description: t.trades.tradeDetailsStepDesc },
+    { id: 3, title: t.trades.analysisNotesStep, description: t.trades.analysisNotesStepDesc }
+  ];
+  
   const [currentStep, setCurrentStep] = useState(1);
   const [tradeData, setTradeData] = useState<TradeData>({
     assetType: '',

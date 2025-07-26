@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useDashboardAnalytics } from '@/hooks/useDashboardAnalytics';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 import { 
   Brain, 
   TrendingUp, 
@@ -41,6 +42,7 @@ interface TradeAnalysis {
 }
 
 export default function AITradeAnalysis() {
+  const { t } = useLanguage();
   const { analytics, loading: analyticsLoading, error } = useDashboardAnalytics();
   const [insights, setInsights] = useState<AIInsight[]>([]);
   const [tradeAnalysis, setTradeAnalysis] = useState<TradeAnalysis[]>([]);
@@ -283,9 +285,9 @@ export default function AITradeAnalysis() {
         <div>
           <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
             <Brain className="h-6 w-6 text-blue-600" />
-            AI Trade Analysis
+            {t.ai.tradeAnalysisTitle}
             <Badge className="bg-green-100 text-green-700 ml-2">
-              Live Data
+              {t.ai.liveData}
             </Badge>
           </h2>
           <p className="text-gray-600 mt-1">
@@ -295,7 +297,7 @@ export default function AITradeAnalysis() {
         <div className="flex items-center gap-4">
           {lastUpdated && (
             <p className="text-sm text-gray-500">
-              Updated {lastUpdated.toLocaleTimeString()}
+              {t.ai.updated} {lastUpdated.toLocaleTimeString()}
             </p>
           )}
           <Button 
@@ -304,7 +306,7 @@ export default function AITradeAnalysis() {
             className="flex items-center gap-2"
           >
             <RefreshCw className={`h-4 w-4 ${(loading || analyticsLoading) ? 'animate-spin' : ''}`} />
-            Refresh Analysis
+            {t.ai.refreshAnalysis}
           </Button>
         </div>
       </div>
@@ -314,16 +316,16 @@ export default function AITradeAnalysis() {
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
             <Brain className="h-12 w-12 text-blue-500 animate-pulse mx-auto mb-4" />
-            <p className="text-gray-600">Loading your trading data...</p>
+            <p className="text-gray-600">{t.ai.loadingTradingData}</p>
           </div>
         </div>
       ) : error ? (
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
             <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-            <p className="text-red-600">Error loading trade data: {error}</p>
+            <p className="text-red-600">{t.ai.errorLoadingData} {error}</p>
             <Button onClick={() => window.location.reload()} className="mt-4">
-              Retry
+              {t.ai.retry}
             </Button>
           </div>
         </div>
@@ -331,14 +333,14 @@ export default function AITradeAnalysis() {
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
             <Brain className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600">No trades found. Add some trades to get AI insights!</p>
+            <p className="text-gray-600">{t.ai.noTradesFound}</p>
           </div>
         </div>
       ) : loading ? (
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
             <Brain className="h-12 w-12 text-blue-500 animate-pulse mx-auto mb-4" />
-            <p className="text-gray-600">AI is analyzing your trades...</p>
+            <p className="text-gray-600">{t.ai.aiAnalyzing}</p>
           </div>
         </div>
       ) : (
@@ -348,7 +350,7 @@ export default function AITradeAnalysis() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Lightbulb className="h-5 w-5 text-yellow-500" />
-                AI Insights
+                {t.ai.aiInsights}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -400,7 +402,7 @@ export default function AITradeAnalysis() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <BarChart3 className="h-5 w-5 text-green-500" />
-                Trade Analysis
+                {t.ai.tradeAnalysis}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -416,19 +418,19 @@ export default function AITradeAnalysis() {
                         <div className="text-lg font-bold text-blue-600">
                           {analysis.aiScore}/10
                         </div>
-                        <div className="text-xs text-gray-500">AI Score</div>
+                        <div className="text-xs text-gray-500">{t.ai.aiScore}</div>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4 mb-3">
                       <div>
-                        <span className="text-xs text-gray-500">Risk Level</span>
+                        <span className="text-xs text-gray-500">{t.ai.riskLevel}</span>
                         <Badge className={`ml-2 ${getRiskColor(analysis.riskLevel)}`}>
                           {analysis.riskLevel.toUpperCase()}
                         </Badge>
                       </div>
                       <div>
-                        <span className="text-xs text-gray-500">Prediction</span>
+                        <span className="text-xs text-gray-500">{t.ai.prediction}</span>
                         <span className="ml-2 text-sm font-medium capitalize">
                           {analysis.predictedOutcome}
                         </span>
@@ -436,7 +438,7 @@ export default function AITradeAnalysis() {
                     </div>
 
                     <div className="mb-3">
-                      <h5 className="text-sm font-medium text-gray-700 mb-1">AI Reasoning:</h5>
+                      <h5 className="text-sm font-medium text-gray-700 mb-1">{t.ai.aiReasoning}</h5>
                       <ul className="text-xs text-gray-600 space-y-1">
                         {analysis.reasons.slice(0, 2).map((reason, index) => (
                           <li key={index} className="flex items-start gap-1">
@@ -448,7 +450,7 @@ export default function AITradeAnalysis() {
                     </div>
 
                     <div>
-                      <h5 className="text-sm font-medium text-gray-700 mb-1">Recommendations:</h5>
+                      <h5 className="text-sm font-medium text-gray-700 mb-1">{t.ai.recommendations}</h5>
                       <ul className="text-xs text-gray-600 space-y-1">
                         {analysis.recommendations.slice(0, 2).map((rec, index) => (
                           <li key={index} className="flex items-start gap-1">
@@ -461,10 +463,10 @@ export default function AITradeAnalysis() {
 
                     <div className="mt-3 pt-3 border-t flex justify-between items-center">
                       <span className="text-xs text-gray-500">
-                        Confidence: {analysis.confidence}%
+                        {t.ai.confidence}: {analysis.confidence}%
                       </span>
                       <Button size="sm" variant="outline" className="text-xs">
-                        View Full Analysis
+                        {t.ai.viewFullAnalysis}
                       </Button>
                     </div>
                   </div>

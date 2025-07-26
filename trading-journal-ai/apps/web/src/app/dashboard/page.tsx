@@ -9,9 +9,11 @@ import Navigation from '@/components/Navigation';
 import { PerformanceMetrics, PnLChart, AssetDistributionChart, MonthlyPerformanceChart } from '@/components/DashboardCharts';
 import { RecentTrades } from '@/components/RecentTrades';
 import { AIInsights } from '@/components/AIInsights';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 import Link from 'next/link';
 
 export default function DashboardPage() {
+  const { t } = useLanguage();
   const { user, userProfile, loading: authLoading, logout } = useAuth();
   const { analytics, loading: analyticsLoading, error, refetch } = useDashboardAnalytics();
 
@@ -20,7 +22,7 @@ export default function DashboardPage() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">Loading dashboard...</p>
+          <p className="text-gray-600">{t.common.loading}...</p>
         </div>
       </div>
     );
@@ -31,13 +33,13 @@ export default function DashboardPage() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <Card className="w-96">
           <CardHeader>
-            <CardTitle>Access Denied</CardTitle>
-            <CardDescription>Please log in to access the dashboard</CardDescription>
+            <CardTitle>{t.common.accessDenied}</CardTitle>
+            <CardDescription>{t.common.pleaseLogin}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <Link href="/login">
-                <Button className="w-full">Go to Login</Button>
+                <Button className="w-full">{t.nav.login}</Button>
               </Link>
             </div>
           </CardContent>
@@ -54,9 +56,9 @@ export default function DashboardPage() {
         {/* Header with refresh button */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+            <h1 className="text-3xl font-bold text-gray-900">{t.nav.dashboard}</h1>
             <p className="text-gray-600 mt-1">
-              Welcome back, {userProfile?.displayName || user?.email || 'Guest'}
+              {t.common.welcome}, {userProfile?.displayName || user?.email || 'Guest'}
             </p>
           </div>
           <Button 
@@ -70,7 +72,7 @@ export default function DashboardPage() {
             ) : (
               <RefreshCw className="h-4 w-4" />
             )}
-            Refresh Data
+            {t.common.refresh}
           </Button>
         </div>
 
@@ -79,14 +81,14 @@ export default function DashboardPage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-2 text-red-800">
                 <span>⚠️</span>
-                <span>Error loading data: {error}</span>
+                <span>{t.common.error}: {error}</span>
                 <Button 
                   onClick={refetch} 
                   variant="outline" 
                   size="sm" 
                   className="ml-auto"
                 >
-                  Try Again
+                  {t.common.tryAgain}
                 </Button>
               </div>
             </CardContent>
@@ -97,8 +99,8 @@ export default function DashboardPage() {
           <div className="flex items-center justify-center py-20">
             <div className="text-center">
               <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-blue-600" />
-              <p className="text-lg font-medium text-gray-700">Loading analytics...</p>
-              <p className="text-gray-500">Analyzing your trading data</p>
+              <p className="text-lg font-medium text-gray-700">{t.common.loadingAnalytics}</p>
+              <p className="text-gray-500">{t.common.analyzingData}</p>
             </div>
           </div>
         ) : (
@@ -144,9 +146,9 @@ export default function DashboardPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  🚀 Quick Actions
+                  🚀 {t.dashboard.quickActions}
                 </CardTitle>
-                <CardDescription>Get started with your trading journal</CardDescription>
+                <CardDescription>{t.dashboard.getStarted}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -157,8 +159,8 @@ export default function DashboardPage() {
                           <span className="text-xl">📊</span>
                         </div>
                         <div>
-                          <p className="font-medium">View All Trades</p>
-                          <p className="text-sm text-gray-500">Manage your trading history</p>
+                          <p className="font-medium">{t.dashboard.viewAllTrades}</p>
+                          <p className="text-sm text-gray-500">{t.dashboard.manageTradingHistory}</p>
                         </div>
                       </div>
                     </div>
@@ -171,8 +173,8 @@ export default function DashboardPage() {
                           <span className="text-xl">➕</span>
                         </div>
                         <div>
-                          <p className="font-medium">Add New Trade</p>
-                          <p className="text-sm text-gray-500">Record your latest trades</p>
+                          <p className="font-medium">{t.dashboard.addNewTrade}</p>
+                          <p className="text-sm text-gray-500">{t.dashboard.recordLatestTrades}</p>
                         </div>
                       </div>
                     </div>
@@ -184,8 +186,8 @@ export default function DashboardPage() {
                         <span className="text-xl">📈</span>
                       </div>
                       <div>
-                        <p className="font-medium">Advanced Analytics</p>
-                        <p className="text-sm text-gray-500">Deep dive into performance</p>
+                        <p className="font-medium">{t.dashboard.advancedAnalytics}</p>
+                        <p className="text-sm text-gray-500">{t.dashboard.deepDivePerformance}</p>
                       </div>
                     </div>
                   </div>
@@ -199,15 +201,15 @@ export default function DashboardPage() {
                 <CardContent className="p-12 text-center">
                   <div className="text-6xl mb-4">📊</div>
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                    Start Your Trading Journey
+                    {t.dashboard.welcomeTitle}
                   </h3>
                   <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                    Add your first trade to unlock powerful analytics, AI insights, and performance tracking.
+                    {t.dashboard.welcomeSubtitle}
                   </p>
                   <Link href="/trades">
                     <Button size="lg" className="gap-2">
                       <span>➕</span>
-                      Add Your First Trade
+                      {t.dashboard.getStartedButton}
                     </Button>
                   </Link>
                 </CardContent>

@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -29,6 +30,7 @@ const registerSchema = z.object({
 type RegisterFormData = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
+  const { t } = useLanguage();
   const { register: registerUser } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -55,18 +57,18 @@ export default function RegisterPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Create an account</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">{t.forms.registerTitle}</CardTitle>
           <CardDescription className="text-center">
-            Start your trading journal journey today
+            {t.forms.registerSubtitle}
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="displayName">Full Name</Label>
+              <Label htmlFor="displayName">{t.forms.fullName}</Label>
               <Input
                 id="displayName"
-                placeholder="John Doe"
+                placeholder={t.forms.fullNamePlaceholder}
                 {...register('displayName')}
                 disabled={isLoading}
               />
@@ -75,11 +77,11 @@ export default function RegisterPage() {
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t.forms.email}</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="trader@example.com"
+                placeholder={t.forms.emailPlaceholder}
                 {...register('email')}
                 disabled={isLoading}
               />
@@ -88,10 +90,11 @@ export default function RegisterPage() {
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t.forms.password}</Label>
               <Input
                 id="password"
                 type="password"
+                placeholder={t.forms.passwordPlaceholder}
                 {...register('password')}
                 disabled={isLoading}
               />
@@ -100,10 +103,11 @@ export default function RegisterPage() {
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Label htmlFor="confirmPassword">{t.forms.confirmPassword}</Label>
               <Input
                 id="confirmPassword"
                 type="password"
+                placeholder={t.forms.confirmPasswordPlaceholder}
                 {...register('confirmPassword')}
                 disabled={isLoading}
               />
@@ -117,16 +121,16 @@ export default function RegisterPage() {
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating account...
+                  {t.forms.creatingAccount}
                 </>
               ) : (
-                'Create Account'
+                t.forms.createAccount
               )}
             </Button>
             <p className="text-sm text-center">
-              Already have an account?{' '}
+              {t.forms.hasAccount}{' '}
               <Link href="/login" className="text-blue-600 hover:underline">
-                Sign in
+                {t.forms.signIn}
               </Link>
             </p>
           </CardFooter>

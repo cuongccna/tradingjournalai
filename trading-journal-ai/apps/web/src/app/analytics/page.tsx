@@ -16,6 +16,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useDashboardAnalytics } from '@/hooks/useDashboardAnalytics';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 import Navigation from '@/components/Navigation';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, PieChart as RechartsPieChart, Cell, Pie } from 'recharts';
 import Link from 'next/link';
@@ -45,6 +46,7 @@ interface MonthlyData {
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#84cc16'];
 
 export default function AnalyticsPage() {
+  const { t } = useLanguage();
   const { user, loading: authLoading } = useAuth();
   const { analytics, loading: analyticsLoading, error, refetch } = useDashboardAnalytics();
 
@@ -56,7 +58,7 @@ export default function AnalyticsPage() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">Loading...</p>
+          <p className="text-gray-600">{t.analytics.loading}</p>
         </div>
       </div>
     );
@@ -67,13 +69,13 @@ export default function AnalyticsPage() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <Card className="w-96">
           <CardHeader>
-            <CardTitle>Access Denied</CardTitle>
-            <CardDescription>Please log in to access analytics</CardDescription>
+            <CardTitle>{t.analytics.accessDenied}</CardTitle>
+            <CardDescription>{t.analytics.pleaseLogin}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <Link href="/login">
-                <Button className="w-full">Go to Login</Button>
+                <Button className="w-full">{t.analytics.goToLogin}</Button>
               </Link>
             </div>
           </CardContent>
@@ -139,7 +141,7 @@ export default function AnalyticsPage() {
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
               <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-              <p className="text-gray-600">Loading analytics...</p>
+              <p className="text-gray-600">{t.analytics.loadingAnalytics}</p>
             </div>
           </div>
         </div>
@@ -155,28 +157,28 @@ export default function AnalyticsPage() {
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Trading Analytics</h1>
-            <p className="text-gray-600 mt-2">Comprehensive view of your trading performance</p>
+            <h1 className="text-3xl font-bold text-gray-900">{t.analytics.title}</h1>
+            <p className="text-gray-600 mt-2">{t.analytics.subtitle}</p>
           </div>
           <Button onClick={refetch} className="flex items-center gap-2">
             <RefreshCw className="h-4 w-4" />
-            Refresh Data
+            {t.analytics.refreshData}
           </Button>
         </div>
 
         {/* Key Performance Indicators */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <StatCard
-            title="Total P&L"
+            title={t.analytics.totalPnl}
             value={formatCurrency(analytics.totalPnL)}
             icon={DollarSign}
             trend={analytics.totalPnL >= 0 ? 'up' : 'down'}
-            trendValue={`${analytics.totalTrades} trades`}
+            trendValue={`${analytics.totalTrades} ${t.analytics.trades}`}
             color={analytics.totalPnL >= 0 ? 'green' : 'red'}
           />
           
           <StatCard
-            title="Win Rate"
+            title={t.analytics.winRate}
             value={formatPercentage(analytics.winRate / 100)}
             icon={Target}
             trend={analytics.winRate >= 50 ? 'up' : 'down'}
@@ -185,19 +187,19 @@ export default function AnalyticsPage() {
           />
           
           <StatCard
-            title="Total Trades"
+            title={t.analytics.totalTrades}
             value={analytics.totalTrades.toString()}
             icon={Activity}
-            trendValue={`${analytics.monthlyPerformance.length} months`}
+            trendValue={`${analytics.monthlyPerformance.length} ${t.analytics.months}`}
             color="purple"
           />
           
           <StatCard
-            title="Profit Factor"
+            title={t.analytics.profitFactor}
             value={analytics.profitFactor.toFixed(2)}
             icon={BarChart3}
             trend={analytics.profitFactor >= 1 ? 'up' : 'down'}
-            trendValue={analytics.profitFactor >= 1 ? 'Profitable' : 'Unprofitable'}
+            trendValue={analytics.profitFactor >= 1 ? t.analytics.profitable : t.analytics.unprofitable}
             color={analytics.profitFactor >= 1 ? 'green' : 'red'}
           />
         </div>
@@ -208,14 +210,14 @@ export default function AnalyticsPage() {
             <CardHeader>
               <CardTitle className="flex items-center">
                 <PieChart className="h-5 w-5 mr-2" />
-                Performance Breakdown
+                {t.analytics.performanceBreakdown}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div className="flex justify-between items-center p-4 bg-green-50 rounded-lg">
                   <div>
-                    <p className="font-medium text-green-800">Average Win</p>
+                    <p className="font-medium text-green-800">{t.analytics.averageWin}</p>
                     <p className="text-2xl font-bold text-green-700">{formatCurrency(analytics.averageWin)}</p>
                   </div>
                   <div className="text-green-600">
@@ -225,7 +227,7 @@ export default function AnalyticsPage() {
                 
                 <div className="flex justify-between items-center p-4 bg-red-50 rounded-lg">
                   <div>
-                    <p className="font-medium text-red-800">Average Loss</p>
+                    <p className="font-medium text-red-800">{t.analytics.averageLoss}</p>
                     <p className="text-2xl font-bold text-red-700">{formatCurrency(Math.abs(analytics.averageLoss))}</p>
                   </div>
                   <div className="text-red-600">
@@ -235,11 +237,11 @@ export default function AnalyticsPage() {
                 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="text-center p-3 bg-blue-50 rounded-lg">
-                    <p className="text-sm text-blue-600">Best Trade</p>
+                    <p className="text-sm text-blue-600">{t.analytics.bestTrade}</p>
                     <p className="text-lg font-bold text-blue-700">{formatCurrency(analytics.bestTrade)}</p>
                   </div>
                   <div className="text-center p-3 bg-orange-50 rounded-lg">
-                    <p className="text-sm text-orange-600">Worst Trade</p>
+                    <p className="text-sm text-orange-600">{t.analytics.worstTrade}</p>
                     <p className="text-lg font-bold text-orange-700">{formatCurrency(analytics.worstTrade)}</p>
                   </div>
                 </div>
@@ -252,7 +254,7 @@ export default function AnalyticsPage() {
             <CardHeader>
               <CardTitle className="flex items-center">
                 <BarChart3 className="h-5 w-5 mr-2" />
-                Monthly Performance
+                {t.analytics.monthlyPerformance}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -282,7 +284,7 @@ export default function AnalyticsPage() {
                       </span>
                     </div>
                     <div className="w-16 text-right">
-                      <span className="text-xs text-gray-500">{month.trades} trades</span>
+                      <span className="text-xs text-gray-500">{month.trades} {t.analytics.trades}</span>
                     </div>
                   </div>
                 ))}
@@ -298,7 +300,7 @@ export default function AnalyticsPage() {
             <CardHeader>
               <CardTitle className="flex items-center">
                 <Activity className="h-5 w-5 mr-2" />
-                P&L Over Time
+                {t.analytics.pnlOverTime}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -309,7 +311,7 @@ export default function AnalyticsPage() {
                   <YAxis />
                   <Tooltip formatter={(value) => [formatCurrency(Number(value)), '']} />
                   <Legend />
-                  <Line type="monotone" dataKey="cumulative" stroke="#8884d8" strokeWidth={2} name="Cumulative P&L" />
+                  <Line type="monotone" dataKey="cumulative" stroke="#8884d8" strokeWidth={2} name={t.analytics.cumulativePnl} />
                 </LineChart>
               </ResponsiveContainer>
             </CardContent>
@@ -320,7 +322,7 @@ export default function AnalyticsPage() {
             <CardHeader>
               <CardTitle className="flex items-center">
                 <PieChart className="h-5 w-5 mr-2" />
-                Asset Distribution
+                {t.analytics.assetDistribution}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -365,7 +367,7 @@ export default function AnalyticsPage() {
           <CardHeader>
             <CardTitle className="flex items-center">
               <BarChart3 className="h-5 w-5 mr-2" />
-              Monthly Performance
+              {t.analytics.monthlyPerformance}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -376,7 +378,7 @@ export default function AnalyticsPage() {
                 <YAxis />
                 <Tooltip formatter={(value) => [formatCurrency(Number(value)), 'P&L']} />
                 <Legend />
-                <Bar dataKey="pnl" fill="#8884d8" name="Monthly P&L" />
+                <Bar dataKey="pnl" fill="#8884d8" name={t.analytics.monthlyPnl} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -386,20 +388,20 @@ export default function AnalyticsPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Risk Metrics</CardTitle>
+              <CardTitle className="text-lg">{t.analytics.riskMetrics}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Max Drawdown</span>
+                  <span className="text-gray-600">{t.analytics.maxDrawdown}</span>
                   <span className="font-medium text-red-600">{formatCurrency(analytics.maxDrawdown)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Profit Factor</span>
+                  <span className="text-gray-600">{t.analytics.profitFactor}</span>
                   <span className="font-medium">{analytics.profitFactor.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Total Volume</span>
+                  <span className="text-gray-600">{t.analytics.totalVolume}</span>
                   <span className="font-medium">{formatCurrency(analytics.totalVolume)}</span>
                 </div>
               </div>
@@ -408,20 +410,20 @@ export default function AnalyticsPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Trading Habits</CardTitle>
+              <CardTitle className="text-lg">{t.analytics.tradingHabits}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Active Positions</span>
+                  <span className="text-gray-600">{t.analytics.activePositions}</span>
                   <span className="font-medium">{analytics.activePositions}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Recent Trades</span>
+                  <span className="text-gray-600">{t.analytics.recentTrades}</span>
                   <span className="font-medium">{analytics.recentTrades.length}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Asset Types</span>
+                  <span className="text-gray-600">{t.analytics.assetTypes}</span>
                   <span className="font-medium">{analytics.assetTypeDistribution.length}</span>
                 </div>
               </div>
@@ -430,20 +432,20 @@ export default function AnalyticsPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Volume Metrics</CardTitle>
+              <CardTitle className="text-lg">{t.analytics.volumeMetrics}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Total Volume</span>
+                  <span className="text-gray-600">{t.analytics.totalVolume}</span>
                   <span className="font-medium">{formatCurrency(analytics.totalVolume)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Avg Trade Size</span>
+                  <span className="text-gray-600">{t.analytics.avgTradeSize}</span>
                   <span className="font-medium">{formatCurrency(analytics.totalVolume / analytics.totalTrades || 0)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Largest Position</span>
+                  <span className="text-gray-600">{t.analytics.largestPosition}</span>
                   <span className="font-medium">{formatCurrency(15000)}</span>
                 </div>
               </div>

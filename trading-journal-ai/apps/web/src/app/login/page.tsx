@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -20,6 +21,7 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
+  const { t } = useLanguage();
   const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -46,15 +48,15 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Welcome back</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">{t.forms.loginTitle}</CardTitle>
           <CardDescription className="text-center">
-            Enter your credentials to access your account
+            {t.forms.loginSubtitle}
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t.forms.email}</Label>
               <Input
                 id="email"
                 type="email"
@@ -67,7 +69,7 @@ export default function LoginPage() {
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t.forms.password}</Label>
               <Input
                 id="password"
                 type="password"
@@ -84,20 +86,20 @@ export default function LoginPage() {
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Signing in...
+                  {t.forms.submitting}
                 </>
               ) : (
-                'Sign In'
+                t.forms.loginButton
               )}
             </Button>
             <div className="text-sm text-center space-y-2">
               <Link href="/forgot-password" className="text-blue-600 hover:underline">
-                Forgot your password?
+                {t.forms.forgotPassword}
               </Link>
               <p>
-                Don&apos;t have an account?{' '}
+                {t.forms.noAccount}{' '}
                 <Link href="/register" className="text-blue-600 hover:underline">
-                  Sign up
+                  {t.forms.signUp}
                 </Link>
               </p>
             </div>

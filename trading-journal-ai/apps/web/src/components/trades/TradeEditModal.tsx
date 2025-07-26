@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { X, Save } from 'lucide-react';
 import { api } from '@/lib/api';
 import toast from 'react-hot-toast';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 
 interface Trade {
   id: string;
@@ -34,6 +35,7 @@ interface Props {
 }
 
 export default function TradeEditModal({ trade, isOpen, onClose, onUpdated }: Props) {
+  const { t } = useLanguage();
   const [formData, setFormData] = useState<Partial<Trade>>({});
   const [loading, setLoading] = useState(false);
 
@@ -86,15 +88,15 @@ export default function TradeEditModal({ trade, isOpen, onClose, onUpdated }: Pr
       const response = await api.trades.update(trade.id, updatePayload);
       
       if (response.data.success) {
-        toast.success('Trade updated successfully!');
+        toast.success(t.trades.tradeUpdatedSuccess);
         onUpdated(response.data.data);
         onClose();
       } else {
-        toast.error('Failed to update trade');
+        toast.error(t.trades.failedToUpdateTrade);
       }
     } catch (error: any) {
       console.error('Error updating trade:', error);
-      const errorMessage = error.response?.data?.message || 'Failed to update trade';
+      const errorMessage = error.response?.data?.message || t.trades.failedToUpdateTrade;
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -111,7 +113,7 @@ export default function TradeEditModal({ trade, isOpen, onClose, onUpdated }: Pr
       <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white shadow-2xl">
         <CardHeader className="flex flex-row items-center justify-between border-b bg-white sticky top-0 z-10">
           <CardTitle className="text-xl font-semibold text-gray-900">
-            Edit Trade: {trade.symbol}
+            {t.trades.editTrade}: {trade.symbol}
           </CardTitle>
           <Button variant="ghost" size="sm" onClick={onClose} className="hover:bg-gray-100">
             <X className="h-4 w-4" />
@@ -123,7 +125,7 @@ export default function TradeEditModal({ trade, isOpen, onClose, onUpdated }: Pr
             {/* Basic Trade Info */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="symbol">Symbol</Label>
+                <Label htmlFor="symbol">{t.trades.symbol}</Label>
                 <Input
                   id="symbol"
                   type="text"
@@ -134,7 +136,7 @@ export default function TradeEditModal({ trade, isOpen, onClose, onUpdated }: Pr
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="assetType">Asset Type</Label>
+                <Label htmlFor="assetType">{t.trades.assetType}</Label>
                 <select
                   id="assetType"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
@@ -142,12 +144,12 @@ export default function TradeEditModal({ trade, isOpen, onClose, onUpdated }: Pr
                   onChange={(e) => setFormData(prev => ({ ...prev, assetType: e.target.value }))}
                   required
                 >
-                  <option value="">Select asset type</option>
-                  <option value="stocks">Stocks</option>
-                  <option value="crypto">Cryptocurrency</option>
-                  <option value="forex">Forex</option>
-                  <option value="commodities">Commodities</option>
-                  <option value="options">Options</option>
+                  <option value="">{t.trades.selectAssetType}</option>
+                  <option value="stocks">{t.trades.stocksEtfs}</option>
+                  <option value="crypto">{t.trades.cryptocurrency}</option>
+                  <option value="forex">{t.trades.forex}</option>
+                  <option value="commodities">{t.trades.commodities}</option>
+                  <option value="options">{t.trades.options}</option>
                 </select>
               </div>
             </div>
@@ -155,7 +157,7 @@ export default function TradeEditModal({ trade, isOpen, onClose, onUpdated }: Pr
             {/* Trade Details */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="side">Side</Label>
+                <Label htmlFor="side">{t.trades.side}</Label>
                 <select
                   id="side"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
@@ -163,14 +165,14 @@ export default function TradeEditModal({ trade, isOpen, onClose, onUpdated }: Pr
                   onChange={(e) => setFormData(prev => ({ ...prev, side: e.target.value as 'buy' | 'sell' }))}
                   required
                 >
-                  <option value="">Select side</option>
-                  <option value="buy">Buy / Long</option>
-                  <option value="sell">Sell / Short</option>
+                  <option value="">{t.trades.selectSide}</option>
+                  <option value="buy">{t.trades.buy} / {t.trades.long}</option>
+                  <option value="sell">{t.trades.sell} / {t.trades.short}</option>
                 </select>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="quantity">Quantity</Label>
+                <Label htmlFor="quantity">{t.trades.quantity}</Label>
                 <Input
                   id="quantity"
                   type="number"
@@ -185,7 +187,7 @@ export default function TradeEditModal({ trade, isOpen, onClose, onUpdated }: Pr
             {/* Prices */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="entryPrice">Entry Price</Label>
+                <Label htmlFor="entryPrice">{t.trades.entryPrice}</Label>
                 <Input
                   id="entryPrice"
                   type="number"
@@ -197,7 +199,7 @@ export default function TradeEditModal({ trade, isOpen, onClose, onUpdated }: Pr
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="exitPrice">Exit Price (Optional)</Label>
+                <Label htmlFor="exitPrice">{t.trades.exitPrice} ({t.trades.optional})</Label>
                 <Input
                   id="exitPrice"
                   type="number"
@@ -211,7 +213,7 @@ export default function TradeEditModal({ trade, isOpen, onClose, onUpdated }: Pr
             {/* Dates */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="entryDate">Entry Date</Label>
+                <Label htmlFor="entryDate">{t.trades.entryDate}</Label>
                 <Input
                   id="entryDate"
                   type="date"
@@ -222,7 +224,7 @@ export default function TradeEditModal({ trade, isOpen, onClose, onUpdated }: Pr
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="exitDate">Exit Date (Optional)</Label>
+                <Label htmlFor="exitDate">{t.trades.exitDate} ({t.trades.optional})</Label>
                 <Input
                   id="exitDate"
                   type="date"
@@ -234,37 +236,37 @@ export default function TradeEditModal({ trade, isOpen, onClose, onUpdated }: Pr
 
             {/* Strategy */}
             <div className="space-y-2">
-              <Label htmlFor="strategy">Strategy</Label>
+              <Label htmlFor="strategy">{t.trades.strategy}</Label>
               <Input
                 id="strategy"
                 type="text"
                 value={formData.strategy || ''}
                 onChange={(e) => setFormData(prev => ({ ...prev, strategy: e.target.value }))}
-                placeholder="e.g., Swing Trading, Day Trading, Scalping"
+                placeholder={t.trades.enterStrategy}
               />
             </div>
 
             {/* Tags */}
             <div className="space-y-2">
-              <Label htmlFor="tags">Tags (comma-separated)</Label>
+              <Label htmlFor="tags">{t.trades.tags} ({t.trades.enterTags})</Label>
               <Input
                 id="tags"
                 type="text"
                 value={(formData.tags || []).join(', ')}
                 onChange={(e) => handleTagsInput(e.target.value)}
-                placeholder="e.g., breakout, support, news"
+                placeholder={t.trades.enterTags}
               />
             </div>
 
             {/* Notes */}
             <div className="space-y-2">
-              <Label htmlFor="notes">Notes</Label>
+              <Label htmlFor="notes">{t.trades.notes}</Label>
               <textarea
                 id="notes"
                 rows={4}
                 value={formData.notes || ''}
                 onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-                placeholder="Add your trade analysis, lessons learned, etc."
+                placeholder={t.trades.enterNotes}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
@@ -272,18 +274,18 @@ export default function TradeEditModal({ trade, isOpen, onClose, onUpdated }: Pr
             {/* Actions */}
             <div className="flex justify-end gap-3 pt-4 border-t">
               <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
-                Cancel
+                {t.trades.cancel}
               </Button>
               <Button type="submit" disabled={loading} className="bg-blue-600 hover:bg-blue-700">
                 {loading ? (
                   <div className="flex items-center gap-2">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    Updating...
+                    {t.trades.updating}...
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
                     <Save className="h-4 w-4" />
-                    Update Trade
+                    {t.trades.updateTrade}
                   </div>
                 )}
               </Button>

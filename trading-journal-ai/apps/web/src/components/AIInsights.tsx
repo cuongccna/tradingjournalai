@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useMemo } from 'react';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 
 interface Trade {
   id: string;
@@ -54,6 +55,7 @@ interface AIInsightsProps {
 }
 
 export const AIInsights = ({ analytics }: AIInsightsProps) => {
+  const { t } = useLanguage();
   const insights = useMemo((): AIInsight[] => {
     const insights: AIInsight[] = [];
 
@@ -365,13 +367,13 @@ export const AIInsights = ({ analytics }: AIInsightsProps) => {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          🤖 AI Trading Assistant
+          🤖 {t.dashboard.aiTradingAssistant}
           <span className="text-sm bg-green-100 text-green-700 px-2 py-1 rounded-full font-normal">
-            Live Analysis
+            {t.dashboard.liveAnalysis}
           </span>
         </CardTitle>
         <CardDescription>
-          AI-powered insights from your trading patterns • {analytics.totalTrades} trades analyzed
+          {t.dashboard.aiPoweredInsights} • {analytics.totalTrades} {t.dashboard.tradesAnalyzed}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -382,19 +384,19 @@ export const AIInsights = ({ analytics }: AIInsightsProps) => {
               <div className={`text-xl font-bold ${analytics.totalPnL >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                 {analytics.totalPnL.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
               </div>
-              <div className="text-xs text-gray-500">Total P&L</div>
+              <div className="text-xs text-gray-500">{t.dashboard.totalPnL}</div>
             </div>
             <div className="text-center">
               <div className="text-xl font-bold text-blue-600">{analytics.winRate.toFixed(1)}%</div>
-              <div className="text-xs text-gray-500">Win Rate</div>
+              <div className="text-xs text-gray-500">{t.dashboard.winRate}</div>
             </div>
             <div className="text-center">
               <div className="text-xl font-bold text-purple-600">{analytics.profitFactor.toFixed(2)}</div>
-              <div className="text-xs text-gray-500">Profit Factor</div>
+              <div className="text-xs text-gray-500">{t.dashboard.profitFactor}</div>
             </div>
             <div className="text-center">
               <div className="text-xl font-bold text-orange-600">{analytics.activePositions}</div>
-              <div className="text-xs text-gray-500">Open Trades</div>
+              <div className="text-xs text-gray-500">{t.dashboard.openTrades}</div>
             </div>
           </div>
 
@@ -402,8 +404,8 @@ export const AIInsights = ({ analytics }: AIInsightsProps) => {
           {insights.length === 0 ? (
             <div className="text-center py-6 text-gray-500">
               <div className="text-3xl mb-2">🤖</div>
-              <p>AI analysis in progress...</p>
-              <p className="text-sm">More insights will appear as you trade more</p>
+              <p>{t.dashboard.aiAnalysisInProgress}</p>
+              <p className="text-sm">{t.dashboard.moreInsightsWillAppear}</p>
             </div>
           ) : (
             <div className="grid gap-3">
@@ -424,7 +426,7 @@ export const AIInsights = ({ analytics }: AIInsightsProps) => {
                           insight.priority === 2 ? 'bg-yellow-100 text-yellow-700' :
                           'bg-blue-100 text-blue-700'
                         }`}>
-                          {insight.priority === 1 ? 'High' : insight.priority === 2 ? 'Medium' : 'Low'} Priority
+                          {insight.priority === 1 ? t.dashboard.highPriority : insight.priority === 2 ? t.dashboard.mediumPriority : t.dashboard.lowPriority}
                         </span>
                       </div>
                       <p className="text-sm opacity-90">{insight.message}</p>
@@ -439,15 +441,15 @@ export const AIInsights = ({ analytics }: AIInsightsProps) => {
           <div className="pt-4 border-t">
             <div className="flex flex-wrap gap-2">
               <button className="text-sm text-blue-600 hover:text-blue-700 font-medium hover:underline transition-colors">
-                📊 View Detailed Analysis
+                📊 {t.dashboard.viewDetailedAnalysis}
               </button>
               <span className="text-gray-300">|</span>
               <button className="text-sm text-blue-600 hover:text-blue-700 font-medium hover:underline transition-colors">
-                🎯 Get Trading Recommendations
+                🎯 {t.dashboard.getTradingRecommendations}
               </button>
               <span className="text-gray-300">|</span>
               <button className="text-sm text-blue-600 hover:text-blue-700 font-medium hover:underline transition-colors">
-                📈 Pattern Recognition
+                📈 {t.dashboard.patternRecognition}
               </button>
             </div>
           </div>

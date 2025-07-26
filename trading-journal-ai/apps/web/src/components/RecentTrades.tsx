@@ -1,28 +1,31 @@
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 
 interface RecentTradesProps {
   trades: any[];
 }
 
 export const RecentTrades = ({ trades }: RecentTradesProps) => {
+  const { t } = useLanguage();
+  
   if (!trades?.length) {
     return (
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            🕒 Recent Trades
+            🕒 {t.dashboard.recentTrades}
           </CardTitle>
           <CardDescription>
-            Your latest trading activity
+            {t.dashboard.yourLatestTrades}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8 text-gray-500">
             <div className="text-4xl mb-2">📊</div>
-            <p>No recent trades found</p>
-            <p className="text-sm">Start trading to see your activity here</p>
+            <p>{t.dashboard.noRecentTrades}</p>
+            <p className="text-sm">{t.dashboard.startTradingToSee}</p>
           </div>
         </CardContent>
       </Card>
@@ -33,10 +36,10 @@ export const RecentTrades = ({ trades }: RecentTradesProps) => {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          🕒 Recent Trades
+          🕒 {t.dashboard.recentTrades}
         </CardTitle>
         <CardDescription>
-          Your latest {trades.length} trades
+          {t.dashboard.yourLatestTrades}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -51,7 +54,7 @@ export const RecentTrades = ({ trades }: RecentTradesProps) => {
                   <div className="text-sm text-gray-600">
                     {(trade.side || 'Unknown').toUpperCase()} • 
                     {trade.assetType || 'Unknown'} • 
-                    Status: {(trade.status || 'Unknown').toUpperCase()}
+                    {t.dashboard.status}: {(trade.status || 'Unknown').toUpperCase()}
                   </div>
                 </div>
                 <div className="text-right">

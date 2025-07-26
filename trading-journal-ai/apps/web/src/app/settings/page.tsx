@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Navigation from '@/components/Navigation';
+import LanguageSettings from '@/components/settings/LanguageSettings';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,6 +24,7 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 
 interface UserSettings {
   profile: {
@@ -54,7 +56,8 @@ interface UserSettings {
 
 export default function SettingsPage() {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<'profile' | 'notifications' | 'security' | 'trading' | 'data'>('profile');
+  const { t } = useLanguage();
+  const [activeTab, setActiveTab] = useState<'profile' | 'notifications' | 'security' | 'trading' | 'data' | 'language'>('profile');
   const [settings, setSettings] = useState<UserSettings>({
     profile: {
       displayName: '',
@@ -153,9 +156,10 @@ export default function SettingsPage() {
               <CardContent className="p-4">
                 <nav className="space-y-2">
                   {[
-                    { id: 'profile', label: 'Profile', icon: User },
-                    { id: 'notifications', label: 'Notifications', icon: Bell },
-                    { id: 'security', label: 'Security', icon: Shield },
+                    { id: 'profile', label: t.settings.profile, icon: User },
+                    { id: 'language', label: t.settings.language, icon: Globe },
+                    { id: 'notifications', label: t.settings.notifications, icon: Bell },
+                    { id: 'security', label: t.settings.security, icon: Shield },
                     { id: 'trading', label: 'Trading', icon: Settings },
                     { id: 'data', label: 'Data & Privacy', icon: Database }
                   ].map((tab) => {
@@ -256,6 +260,10 @@ export default function SettingsPage() {
                   </div>
                 </CardContent>
               </Card>
+            )}
+
+            {activeTab === 'language' && (
+              <LanguageSettings />
             )}
 
             {activeTab === 'notifications' && (

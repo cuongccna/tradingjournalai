@@ -14,20 +14,22 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
-
-const navigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: Home },
-  { name: 'Trades', href: '/trades', icon: TrendingUp },
-  { name: 'Analytics', href: '/analytics', icon: BarChart3 },
-  { name: 'AI Assistant', href: '/ai', icon: Brain },
-  { name: 'Settings', href: '/settings', icon: Settings },
-];
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 
 export default function Navigation() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
+  const { t } = useLanguage();
 
   if (!user) return null;
+
+  const navigation = [
+    { name: t.nav.dashboard, href: '/dashboard', icon: Home },
+    { name: t.nav.trades, href: '/trades', icon: TrendingUp },
+    { name: t.nav.analytics, href: '/analytics', icon: BarChart3 },
+    { name: t.nav.ai, href: '/ai', icon: Brain },
+    { name: t.nav.settings, href: '/settings', icon: Settings },
+  ];
 
   return (
     <nav className="bg-white shadow-sm border-b">

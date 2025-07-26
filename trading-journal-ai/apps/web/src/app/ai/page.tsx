@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 import { 
   Brain, 
   Newspaper, 
@@ -44,6 +45,7 @@ interface AIChat {
 }
 
 export default function AIPage() {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<'analysis' | 'patterns' | 'market' | 'risk' | 'news' | 'chat'>('analysis');
   const [marketNews, setMarketNews] = useState<MarketNews[]>([
     {
@@ -68,8 +70,8 @@ export default function AIPage() {
     },
     {
       id: '3',
-      title: 'Energy Sector Volatility Expected',
-      summary: 'Oil price fluctuations may impact energy stock performance this week.',
+      title: t.ai.news.items.energyVolatility.title,
+      summary: t.ai.news.items.energyVolatility.summary,
       sentiment: 'neutral',
       impact: 'medium',
       source: 'Bloomberg',
@@ -81,7 +83,7 @@ export default function AIPage() {
   const [chatMessages, setChatMessages] = useState<AIChat[]>([
     {
       id: '1',
-      message: 'Hello! I\'m your AI trading assistant. How can I help you analyze your trades today?',
+      message: t.ai.messages.initialMessage,
       sender: 'ai',
       timestamp: new Date()
     }
@@ -151,13 +153,13 @@ export default function AIPage() {
           <div>
             <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
               <Brain className="h-8 w-8 text-blue-600" />
-              AI Trading Assistant
+              {t.ai.title}
             </h1>
-            <p className="text-gray-600 mt-2">AI-powered analysis, insights, and market intelligence</p>
+            <p className="text-gray-600 mt-2">{t.ai.subtitle}</p>
           </div>
           <Button variant="outline" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
-            AI Settings
+            {t.ai.aiSettings}
           </Button>
         </div>
 
@@ -172,7 +174,7 @@ export default function AIPage() {
             }`}
           >
             <TrendingUp className="h-4 w-4" />
-            AI Analysis
+            {t.ai.analysis}
           </button>
           <button
             onClick={() => setActiveTab('patterns')}
@@ -183,7 +185,7 @@ export default function AIPage() {
             }`}
           >
             <Activity className="h-4 w-4" />
-            Patterns
+            {t.ai.patterns}
           </button>
           <button
             onClick={() => setActiveTab('market')}
@@ -194,7 +196,7 @@ export default function AIPage() {
             }`}
           >
             <BarChart3 className="h-4 w-4" />
-            Market
+            {t.ai.market}
           </button>
           <button
             onClick={() => setActiveTab('risk')}
@@ -205,7 +207,7 @@ export default function AIPage() {
             }`}
           >
             <Shield className="h-4 w-4" />
-            Risk
+            {t.ai.risk}
           </button>
           <button
             onClick={() => setActiveTab('news')}
@@ -216,7 +218,7 @@ export default function AIPage() {
             }`}
           >
             <Newspaper className="h-4 w-4" />
-            News
+            {t.ai.news.title}
           </button>
           <button
             onClick={() => setActiveTab('chat')}
@@ -227,7 +229,7 @@ export default function AIPage() {
             }`}
           >
             <MessageSquare className="h-4 w-4" />
-            AI Chat
+            {t.ai.chat}
           </button>
         </div>
 
@@ -246,7 +248,7 @@ export default function AIPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Globe className="h-5 w-5 text-blue-500" />
-                  Market News & Analysis
+                  {t.ai.news.title}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -257,10 +259,10 @@ export default function AIPage() {
                         <h3 className="font-semibold text-gray-900 flex-1">{news.title}</h3>
                         <div className="flex items-center gap-2 ml-4">
                           <Badge className={getSentimentColor(news.sentiment)}>
-                            {news.sentiment}
+                            {t.ai.news.filters[news.sentiment as keyof typeof t.ai.news.filters]}
                           </Badge>
                           <Badge className={getImpactColor(news.impact)}>
-                            {news.impact} impact
+                            {t.ai.news.impact[news.impact as keyof typeof t.ai.news.impact]}
                           </Badge>
                         </div>
                       </div>
@@ -297,7 +299,7 @@ export default function AIPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Bot className="h-5 w-5 text-green-500" />
-                  AI Trading Assistant
+                  {t.ai.chat}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -322,10 +324,10 @@ export default function AIPage() {
                   <Input
                     value={chatInput}
                     onChange={(e) => setChatInput(e.target.value)}
-                    placeholder="Ask me about your trades, strategies, or market analysis..."
+                    placeholder={t.ai.messages.placeholder}
                     onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                   />
-                  <Button onClick={handleSendMessage}>Send</Button>
+                  <Button onClick={handleSendMessage}>{t.ai.messages.sendButton}</Button>
                 </div>
               </CardContent>
             </Card>
@@ -333,17 +335,17 @@ export default function AIPage() {
             {/* Quick Questions */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Quick Questions</CardTitle>
+                <CardTitle className="text-lg">{t.ai.quickQuestions}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {[
-                    "Analyze my recent performance",
-                    "What are my best trading patterns?",
-                    "Should I diversify my portfolio?",
-                    "How can I improve my win rate?",
-                    "What's my risk exposure?",
-                    "Suggest position sizing for AAPL"
+                    t.ai.analyzePerformance,
+                    t.ai.bestPatterns,
+                    t.ai.diversifyPortfolio,
+                    t.ai.improveWinRate,
+                    t.ai.riskExposure,
+                    t.ai.positionSizing
                   ].map((question) => (
                     <Button
                       key={question}

@@ -1,6 +1,7 @@
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 import {
   LineChart,
   Line,
@@ -24,13 +25,15 @@ interface PnLChartProps {
 }
 
 export const PnLChart = ({ data }: PnLChartProps) => {
+  const { t } = useLanguage();
+  
   return (
     <Card className="col-span-2">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          📈 P&L Over Time
+          📈 {t.dashboard.pnlOverTime}
         </CardTitle>
-        <CardDescription>Daily P&L and cumulative performance</CardDescription>
+        <CardDescription>{t.dashboard.dailyPnlAndCumulative}</CardDescription>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={300}>
@@ -55,7 +58,7 @@ export const PnLChart = ({ data }: PnLChartProps) => {
               }}
               formatter={(value: number, name: string) => [
                 `$${value.toLocaleString()}`,
-                name === 'pnl' ? 'Daily P&L' : 'Cumulative P&L'
+                name === 'pnl' ? t.dashboard.dailyPnl : t.dashboard.cumulativePnl
               ]}
             />
             <Legend />
@@ -63,7 +66,7 @@ export const PnLChart = ({ data }: PnLChartProps) => {
               dataKey="pnl" 
               fill="#3b82f6"
               fillOpacity={0.6}
-              name="Daily P&L"
+              name={t.dashboard.dailyPnl}
             />
             <Line
               type="monotone"
@@ -71,7 +74,7 @@ export const PnLChart = ({ data }: PnLChartProps) => {
               stroke="#3b82f6"
               strokeWidth={3}
               dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
-              name="Cumulative P&L"
+              name={t.dashboard.cumulativePnl}
             />
           </LineChart>
         </ResponsiveContainer>
@@ -85,6 +88,8 @@ interface AssetDistributionChartProps {
 }
 
 export const AssetDistributionChart = ({ data }: AssetDistributionChartProps) => {
+  const { t } = useLanguage();
+  
   const COLORS = {
     stock: '#3b82f6',      // Blue
     forex: '#10b981',      // Green
@@ -103,9 +108,9 @@ export const AssetDistributionChart = ({ data }: AssetDistributionChartProps) =>
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          🥧 Asset Distribution
+          🥧 {t.dashboard.assetDistribution}
         </CardTitle>
-        <CardDescription>P&L by asset type</CardDescription>
+        <CardDescription>{t.dashboard.pnlByAssetType}</CardDescription>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={300}>
@@ -139,13 +144,15 @@ interface MonthlyPerformanceChartProps {
 }
 
 export const MonthlyPerformanceChart = ({ data }: MonthlyPerformanceChartProps) => {
+  const { t } = useLanguage();
+  
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          📊 Monthly Performance
+          📊 {t.dashboard.monthlyPerformance}
         </CardTitle>
-        <CardDescription>Monthly P&L and trade count</CardDescription>
+        <CardDescription>{t.dashboard.monthlyPnlAndTradeCount}</CardDescription>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={300}>
@@ -178,7 +185,7 @@ export const MonthlyPerformanceChart = ({ data }: MonthlyPerformanceChartProps) 
               }}
               formatter={(value: number, name: string) => [
                 name === 'pnl' ? `$${value.toLocaleString()}` : value,
-                name === 'pnl' ? 'Monthly P&L' : 'Trades Count'
+                name === 'pnl' ? t.dashboard.monthlyPnl : t.dashboard.tradesCount
               ]}
             />
             <Legend />
@@ -186,7 +193,7 @@ export const MonthlyPerformanceChart = ({ data }: MonthlyPerformanceChartProps) 
               yAxisId="pnl"
               dataKey="pnl"
               fill="#3b82f6"
-              name="Monthly P&L"
+              name={t.dashboard.monthlyPnl}
               radius={[4, 4, 0, 0]}
             />
             <Line
@@ -196,7 +203,7 @@ export const MonthlyPerformanceChart = ({ data }: MonthlyPerformanceChartProps) 
               stroke="#10b981"
               strokeWidth={2}
               dot={{ fill: '#10b981', strokeWidth: 2, r: 4 }}
-              name="Trade Count"
+              name={t.dashboard.tradesCount}
             />
           </BarChart>
         </ResponsiveContainer>
@@ -230,6 +237,8 @@ export const PerformanceMetrics = ({
   bestTrade,
   worstTrade
 }: PerformanceMetricsProps) => {
+  const { t } = useLanguage();
+  
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -243,7 +252,7 @@ export const PerformanceMetrics = ({
 
   const metrics = [
     {
-      title: 'Total P&L',
+      title: t.dashboard.totalPnL,
       value: formatCurrency(totalPnL),
       change: totalPnL >= 0 ? '+' : '',
       color: totalPnL >= 0 ? 'text-green-600' : 'text-red-600',
@@ -251,7 +260,7 @@ export const PerformanceMetrics = ({
       icon: totalPnL >= 0 ? '📈' : '📉'
     },
     {
-      title: 'Win Rate',
+      title: t.dashboard.winRate,
       value: formatPercentage(winRate),
       change: '',
       color: winRate >= 50 ? 'text-green-600' : 'text-red-600',
@@ -259,7 +268,7 @@ export const PerformanceMetrics = ({
       icon: '🎯'
     },
     {
-      title: 'Total Trades',
+      title: t.dashboard.totalTrades,
       value: (totalTrades || 0).toString(),
       change: '',
       color: 'text-blue-600',
@@ -267,7 +276,7 @@ export const PerformanceMetrics = ({
       icon: '📊'
     },
     {
-      title: 'Active Positions',
+      title: t.dashboard.activePositions,
       value: (activePositions || 0).toString(),
       change: '',
       color: 'text-purple-600',
@@ -275,7 +284,7 @@ export const PerformanceMetrics = ({
       icon: '⚡'
     },
     {
-      title: 'Average Win',
+      title: t.dashboard.averageWin,
       value: formatCurrency(averageWin),
       change: '',
       color: 'text-green-600',
@@ -283,7 +292,7 @@ export const PerformanceMetrics = ({
       icon: '🏆'
     },
     {
-      title: 'Average Loss',
+      title: t.dashboard.averageLoss,
       value: formatCurrency(averageLoss),
       change: '',
       color: 'text-red-600',
@@ -291,7 +300,7 @@ export const PerformanceMetrics = ({
       icon: '💔'
     },
     {
-      title: 'Profit Factor',
+      title: t.dashboard.profitFactor,
       value: profitFactor === Infinity ? '∞' : profitFactor.toFixed(2),
       change: '',
       color: profitFactor >= 1 ? 'text-green-600' : 'text-red-600',
@@ -299,7 +308,7 @@ export const PerformanceMetrics = ({
       icon: '⚖️'
     },
     {
-      title: 'Max Drawdown',
+      title: t.dashboard.maxDrawdown,
       value: formatCurrency(maxDrawdown),
       change: '',
       color: 'text-red-600',
@@ -307,7 +316,7 @@ export const PerformanceMetrics = ({
       icon: '⬇️'
     },
     {
-      title: 'Best Trade',
+      title: t.dashboard.bestTrade,
       value: formatCurrency(bestTrade),
       change: '',
       color: 'text-green-600',
@@ -315,7 +324,7 @@ export const PerformanceMetrics = ({
       icon: '🌟'
     },
     {
-      title: 'Worst Trade',
+      title: t.dashboard.worstTrade,
       value: formatCurrency(worstTrade),
       change: '',
       color: 'text-red-600',
