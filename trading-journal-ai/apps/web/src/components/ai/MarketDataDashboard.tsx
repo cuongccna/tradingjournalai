@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useDashboardAnalytics } from '@/hooks/useDashboardAnalytics';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 import { Trade } from '@/../../../../packages/shared/src/types';
 import { 
   TrendingUp, 
@@ -46,10 +47,26 @@ interface TradingRecommendation {
 
 export default function MarketDataDashboard() {
   const { analytics, loading: analyticsLoading, error } = useDashboardAnalytics();
+  const { t, loading: languageLoading } = useLanguage();
   const [portfolioData, setPortfolioData] = useState<PortfolioData[]>([]);
   const [recommendations, setRecommendations] = useState<TradingRecommendation[]>([]);
   const [loading, setLoading] = useState(false);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+
+  // Defensive check for translations
+  const translations = (t as any)?.ai?.marketDataDashboard;
+  
+  // Only show loading if translations are not available
+  if (!translations) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <BarChart3 className="h-12 w-12 text-blue-500 animate-pulse mx-auto mb-4" />
+          <p className="text-gray-600">Đang tải bản dịch...</p>
+        </div>
+      </div>
+    );
+  }
 
   useEffect(() => {
     if (analytics && !analyticsLoading) {
@@ -79,7 +96,7 @@ export default function MarketDataDashboard() {
     // Analyze each symbol in portfolio
     Object.entries(symbolGroups).forEach(([symbol, trades]: [string, Trade[]]) => {
       const totalPnL = trades.reduce((sum, trade) => sum + (trade.pnl || 0), 0);
-      const totalQuantity = trades.reduce((sum, trade) => sum + Math.abs(trade.size || trade.quantity || 0), 0);
+      const totalQuantity = trades.reduce((sum, trade) => sum + Math.abs(trade.size || 0), 0);
       const winRate = trades.filter(trade => (trade.pnl || 0) > 0).length / trades.length * 100;
       
       portfolioAnalysis.push({
@@ -90,8 +107,8 @@ export default function MarketDataDashboard() {
         currentValue: totalQuantity * (trades[trades.length - 1]?.entryPrice || 0),
         totalPnL,
         pnlPercent: (totalPnL / Math.abs(totalQuantity * (trades[0]?.entryPrice || 1))) * 100,
-        openPositions: trades.filter(trade => trade.status === 'open' || trade.status === 'OPEN').length,
-        closedTrades: trades.filter(trade => trade.status === 'closed' || trade.status === 'CLOSED').length,
+        openPositions: trades.filter(trade => trade.status === 'open').length,
+        closedTrades: trades.filter(trade => trade.status === 'closed').length,
         winRate,
         lastTradeDate: (() => {
           const lastTrade = trades[trades.length - 1];
@@ -178,14 +195,14 @@ export default function MarketDataDashboard() {
         <div>
           <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
             <BarChart3 className="h-6 w-6 text-blue-600" />
-            Market Data Dashboard
+            {translations.title}
           </h2>
-          <p className="text-gray-600 mt-1">Real-time market data and trading signals</p>
+          <p className="text-gray-600 mt-1">{translations.subtitle}</p>
         </div>
         <div className="flex items-center gap-4">
           {lastUpdate && (
             <p className="text-sm text-gray-500">
-              Updated {lastUpdate.toLocaleTimeString()}
+              {translations.lastUpdate} {lastUpdate.toLocaleTimeString()}
             </p>
           )}
           <Button 
@@ -194,7 +211,7 @@ export default function MarketDataDashboard() {
             className="flex items-center gap-2"
           >
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-            Refresh Data
+            {translations.refreshButton}
           </Button>
         </div>
       </div>
@@ -203,7 +220,7 @@ export default function MarketDataDashboard() {
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
             <Activity className="h-12 w-12 text-blue-500 animate-pulse mx-auto mb-4" />
-            <p className="text-gray-600">Fetching market data...</p>
+            <p className="text-gray-600">{translations.loading}</p>
           </div>
         </div>
       ) : (
@@ -214,7 +231,7 @@ export default function MarketDataDashboard() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <DollarSign className="h-5 w-5 text-green-500" />
-                  Portfolio Analysis
+                  {translations.portfolioAnalysis.title}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -226,8 +243,8 @@ export default function MarketDataDashboard() {
                           <div>
                             <h3 className="font-bold text-lg">{portfolio.symbol}</h3>
                             <div className="flex items-center gap-2 text-sm text-gray-500">
-                              <span className="capitalize">{portfolio.performance}</span>
-                              <span>• {portfolio.tradeCount} trades</span>
+                              <span className="capitalize">{translations.portfolioAnalysis[portfolio.performance]}</span>
+                              <span>• {portfolio.tradeCount} {translations.portfolioAnalysis.trades}</span>
                             </div>
                           </div>
                         </div>
@@ -237,31 +254,31 @@ export default function MarketDataDashboard() {
                           <div className={`text-sm font-medium ${
                             portfolio.totalPnL >= 0 ? 'text-green-600' : 'text-red-600'
                           }`}>
-                            Win Rate: {portfolio.winRate.toFixed(1)}%
+                            {translations.portfolioAnalysis.winRate}: {portfolio.winRate.toFixed(1)}%
                           </div>
                         </div>
                       </div>
                       
                       <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                         <div>
-                          <span className="text-gray-500">Total Quantity:</span>
+                          <span className="text-gray-500">{translations.portfolioAnalysis.totalQuantity}:</span>
                           <p className="font-medium">{portfolio.totalQuantity.toFixed(2)}</p>
                         </div>
                         <div>
-                          <span className="text-gray-500">Avg P&L:</span>
+                          <span className="text-gray-500">{translations.portfolioAnalysis.avgPnL}:</span>
                           <p className="font-medium">${portfolio.avgPnL.toFixed(2)}</p>
                         </div>
                         <div>
-                          <span className="text-gray-500">Trade Count:</span>
+                          <span className="text-gray-500">{translations.portfolioAnalysis.tradeCount}:</span>
                           <p className="font-medium">{portfolio.tradeCount}</p>
                         </div>
                         <div>
-                          <span className="text-gray-500">Performance:</span>
+                          <span className="text-gray-500">{translations.portfolioAnalysis.performance}:</span>
                           <p className={`font-medium capitalize ${
                             portfolio.performance === 'positive' ? 'text-green-600' :
                             portfolio.performance === 'negative' ? 'text-red-600' : 'text-gray-600'
                           }`}>
-                            {portfolio.performance}
+                            {translations.portfolioAnalysis[portfolio.performance]}
                           </p>
                         </div>
                       </div>
@@ -278,7 +295,7 @@ export default function MarketDataDashboard() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Target className="h-5 w-5 text-orange-500" />
-                  Trading Recommendations
+                  {translations.recommendations.title}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -294,9 +311,9 @@ export default function MarketDataDashboard() {
                       
                       <div className="space-y-2 text-sm">
                         <div className="flex items-center justify-between">
-                          <span className="text-gray-500">Confidence:</span>
+                          <span className="text-gray-500">{translations.recommendations.confidence}:</span>
                           <span className={`font-medium capitalize ${getConfidenceColor(recommendation.confidence)}`}>
-                            {recommendation.confidence}
+                            {translations.recommendations[recommendation.confidence]}
                           </span>
                         </div>
                       </div>
@@ -318,7 +335,7 @@ export default function MarketDataDashboard() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-yellow-500" />
-            Market Alerts & Notifications
+            {translations.alerts.title}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -328,10 +345,10 @@ export default function MarketDataDashboard() {
                 <AlertTriangle className="h-5 w-5 text-yellow-400 mt-0.5 mr-3" />
                 <div>
                   <p className="text-sm font-medium text-yellow-800">
-                    High Volatility Alert
+                    {translations.alerts.highVolatility.title}
                   </p>
                   <p className="text-sm text-yellow-700 mt-1">
-                    TSLA showing unusual volume spikes. Consider adjusting position sizes.
+                    {translations.alerts.highVolatility.description}
                   </p>
                 </div>
               </div>
@@ -342,10 +359,10 @@ export default function MarketDataDashboard() {
                 <TrendingUp className="h-5 w-5 text-blue-400 mt-0.5 mr-3" />
                 <div>
                   <p className="text-sm font-medium text-blue-800">
-                    Momentum Breakout
+                    {translations.alerts.momentumBreakout.title}
                   </p>
                   <p className="text-sm text-blue-700 mt-1">
-                    NVDA breaking above resistance at $450. Strong bullish signal detected.
+                    {translations.alerts.momentumBreakout.description}
                   </p>
                 </div>
               </div>
@@ -356,10 +373,10 @@ export default function MarketDataDashboard() {
                 <Target className="h-5 w-5 text-green-400 mt-0.5 mr-3" />
                 <div>
                   <p className="text-sm font-medium text-green-800">
-                    Price Target Reached
+                    {translations.alerts.priceTarget.title}
                   </p>
                   <p className="text-sm text-green-700 mt-1">
-                    AAPL reached your target price of $175. Consider taking profits.
+                    {translations.alerts.priceTarget.description}
                   </p>
                 </div>
               </div>

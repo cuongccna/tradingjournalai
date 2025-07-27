@@ -19,33 +19,14 @@ interface LanguageProviderProps {
 
 export function LanguageProvider({ children }: LanguageProviderProps) {
   const [language, setLanguageState] = useState<Language>('vi'); // Default to Vietnamese
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false); // Keep false - translations are ready immediately
   const { user } = useAuth();
 
   // Load language preference from localStorage or user profile
   useEffect(() => {
     const loadLanguagePreference = async () => {
       try {
-        // Try to get from user profile first
-        if (user) {
-          const response = await fetch('/api/user/profile', {
-            headers: {
-              'Authorization': `Bearer ${await user.getIdToken()}`
-            }
-          });
-          
-          if (response.ok) {
-            const profile = await response.json();
-            if (profile.data?.language) {
-              setLanguageState(profile.data.language);
-              localStorage.setItem('trading-journal-language', profile.data.language);
-              setLoading(false);
-              return;
-            }
-          }
-        }
-
-        // Fallback to localStorage
+        // First, always check localStorage for immediate loading
         const savedLanguage = localStorage.getItem('trading-journal-language') as Language;
         if (savedLanguage && (savedLanguage === 'en' || savedLanguage === 'vi')) {
           setLanguageState(savedLanguage);
@@ -54,11 +35,35 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
           setLanguageState('vi');
           localStorage.setItem('trading-journal-language', 'vi');
         }
+        
+        // Set loading to false immediately for localStorage case
+        // setLoading(false); // Commented out - keep it false from initial state
+
+        // If user exists, try to sync with user profile (but don't block UI)
+        if (user) {
+          try {
+            const response = await fetch('/api/user/profile', {
+              headers: {
+                'Authorization': `Bearer ${await user.getIdToken()}`
+              }
+            });
+            
+            if (response.ok) {
+              const profile = await response.json();
+              if (profile.data?.language && profile.data.language !== savedLanguage) {
+                setLanguageState(profile.data.language);
+                localStorage.setItem('trading-journal-language', profile.data.language);
+              }
+            }
+          } catch (error) {
+            console.error('Error syncing language with user profile:', error);
+            // Don't block UI if profile sync fails
+          }
+        }
       } catch (error) {
         console.error('Error loading language preference:', error);
         setLanguageState('vi'); // Default fallback
-      } finally {
-        setLoading(false);
+        // setLoading(false); // Commented out - keep it false from initial state
       }
     };
 

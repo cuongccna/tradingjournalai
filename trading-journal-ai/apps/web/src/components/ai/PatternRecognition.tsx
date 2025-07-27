@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useDashboardAnalytics } from '@/hooks/useDashboardAnalytics';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 import { 
   TrendingUp, 
   TrendingDown,
@@ -49,6 +50,7 @@ interface PerformanceMetric {
 
 export default function PatternRecognition() {
   const { analytics, loading: analyticsLoading, error } = useDashboardAnalytics();
+  const { t } = useLanguage();
   const [patterns, setPatterns] = useState<TradingPattern[]>([]);
   const [performanceMetrics, setPerformanceMetrics] = useState<PerformanceMetric[]>([]);
   const [selectedTimeframe, setSelectedTimeframe] = useState<'1D' | '1W' | '1M'>('1D');
@@ -89,7 +91,7 @@ export default function PatternRecognition() {
           // Bullish pattern detected
           patterns.push({
             id: `${symbol}-bullish`,
-            name: 'Winning Strategy Pattern',
+            name: (t as any).ai.winningStrategyPattern,
             type: 'bullish',
             confidence: Math.min(95, 50 + successRate * 0.5),
             symbol,
@@ -108,7 +110,7 @@ export default function PatternRecognition() {
           // Bearish pattern detected
           patterns.push({
             id: `${symbol}-bearish`,
-            name: 'Loss Pattern Alert',
+            name: (t as any).ai.lossPatternAlert,
             type: 'bearish',
             confidence: 80,
             symbol,
@@ -233,7 +235,7 @@ export default function PatternRecognition() {
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
           <Activity className="h-12 w-12 text-blue-500 animate-pulse mx-auto mb-4" />
-          <p className="text-gray-600">Loading pattern data...</p>
+          <p className="text-gray-600">{(t as any).ai.loadingPatternData}</p>
         </div>
       </div>
     );
@@ -244,7 +246,7 @@ export default function PatternRecognition() {
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
           <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <p className="text-red-600">Error loading data: {error}</p>
+          <p className="text-red-600">{(t as any).ai.errorLoadingData} {error}</p>
         </div>
       </div>
     );
@@ -255,7 +257,7 @@ export default function PatternRecognition() {
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
           <BarChart3 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-600">No trading data available for pattern analysis</p>
+          <p className="text-gray-600">{(t as any).ai.noTradesFound}</p>
         </div>
       </div>
     );
@@ -268,18 +270,18 @@ export default function PatternRecognition() {
         <div>
           <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
             <Activity className="h-6 w-6 text-blue-600" />
-            Pattern Recognition
+            {(t as any).ai.patternRecognition}
             <Badge className="bg-blue-100 text-blue-700 ml-2">
-              Real Data
+              {(t as any).ai.realData}
             </Badge>
           </h2>
           <p className="text-gray-600 mt-1">
-            AI-powered pattern detection from your {analytics.totalTrades} trades
+            {(t as any).ai.aiPoweredPatternDetection.replace('{count}', analytics.totalTrades)}
           </p>
         </div>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-500">Timeframe:</span>
+            <span className="text-sm text-gray-500">{(t as any).ai.timeframe}:</span>
             <div className="flex rounded-lg bg-gray-100 p-1">
               {(['1D', '1W', '1M'] as const).map((timeframe) => (
                 <button
@@ -302,7 +304,7 @@ export default function PatternRecognition() {
             className="flex items-center gap-2"
           >
             <Zap className={`h-4 w-4 ${loading ? 'animate-pulse' : ''}`} />
-            Scan Patterns
+            {(t as any).ai.scanPatterns}
           </Button>
         </div>
       </div>
@@ -311,7 +313,7 @@ export default function PatternRecognition() {
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
             <Activity className="h-12 w-12 text-blue-500 animate-pulse mx-auto mb-4" />
-            <p className="text-gray-600">Scanning for patterns...</p>
+            <p className="text-gray-600">{(t as any).ai.scanningPatterns}</p>
           </div>
         </div>
       ) : (
@@ -321,7 +323,7 @@ export default function PatternRecognition() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Eye className="h-5 w-5 text-purple-500" />
-                Detected Patterns ({patterns.length})
+                {(t as any).ai.detectedPatterns.replace('{count}', patterns.length)}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -329,8 +331,8 @@ export default function PatternRecognition() {
                 {patterns.length === 0 ? (
                   <div className="text-center py-8 text-gray-500">
                     <Activity className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                    <p>No significant patterns detected</p>
-                    <p className="text-sm">Add more trades for better analysis</p>
+                    <p>{(t as any).ai.noSignificantPatterns}</p>
+                    <p className="text-sm">{(t as any).ai.addMoreTradesAnalysis}</p>
                   </div>
                 ) : (
                   patterns.map((pattern) => (
@@ -347,7 +349,7 @@ export default function PatternRecognition() {
                           <div className={`text-sm font-bold ${getConfidenceColor(pattern.confidence)}`}>
                             {pattern.confidence.toFixed(0)}%
                           </div>
-                          <div className="text-xs text-gray-500">confidence</div>
+                          <div className="text-xs text-gray-500">{(t as any).ai.patternConfidence}</div>
                         </div>
                       </div>
                       
@@ -357,7 +359,7 @@ export default function PatternRecognition() {
                           {pattern.timeframe}
                         </Badge>
                         <span className="text-xs text-gray-500">
-                          Success: {pattern.probability.toFixed(1)}%
+                          {(t as any).ai.success}: {pattern.probability.toFixed(1)}%
                         </span>
                       </div>
                       
@@ -366,15 +368,15 @@ export default function PatternRecognition() {
                       {pattern.symbol !== 'STRATEGY' && (
                         <div className="grid grid-cols-2 gap-2 text-xs">
                           <div>
-                            <span className="text-gray-500">Entry:</span>
+                            <span className="text-gray-500">{(t as any).trades.entry}:</span>
                             <span className="ml-1 font-medium">{formatCurrency(pattern.entryPrice)}</span>
                           </div>
                           <div>
-                            <span className="text-gray-500">Target:</span>
+                            <span className="text-gray-500">{(t as any).ai.target}:</span>
                             <span className="ml-1 font-medium text-green-600">{formatCurrency(pattern.target1)}</span>
                           </div>
                           <div>
-                            <span className="text-gray-500">Stop Loss:</span>
+                            <span className="text-gray-500">{(t as any).ai.stopLoss}:</span>
                             <span className="ml-1 font-medium text-red-600">{formatCurrency(pattern.stopLoss)}</span>
                           </div>
                           <div>
@@ -395,7 +397,7 @@ export default function PatternRecognition() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <BarChart3 className="h-5 w-5 text-green-500" />
-                Pattern Performance
+                {(t as any).ai.patternPerformance}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -403,7 +405,7 @@ export default function PatternRecognition() {
                 {performanceMetrics.length === 0 ? (
                   <div className="text-center py-8 text-gray-500">
                     <BarChart3 className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                    <p>No performance data available</p>
+                    <p>{(t as any).ai.noPerformanceData}</p>
                   </div>
                 ) : (
                   performanceMetrics.map((metric, index) => (
@@ -411,25 +413,25 @@ export default function PatternRecognition() {
                       <div className="flex items-center justify-between mb-3">
                         <h4 className="font-semibold text-gray-900">{metric.pattern}</h4>
                         <Badge className="bg-blue-100 text-blue-800">
-                          {metric.successRate.toFixed(1)}% win rate
+                          {metric.successRate.toFixed(1)}% {(t as any).ai.winRate}
                         </Badge>
                       </div>
                       
                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
-                          <span className="text-gray-500">Total Trades:</span>
+                          <span className="text-gray-500">{(t as any).ai.totalTrades}:</span>
                           <span className="ml-2 font-medium">{metric.totalOccurrences}</span>
                         </div>
                         <div>
-                          <span className="text-gray-500">Successful:</span>
+                          <span className="text-gray-500">{(t as any).ai.successful}:</span>
                           <span className="ml-2 font-medium text-green-600">{metric.successfulTrades}</span>
                         </div>
                         <div>
-                          <span className="text-gray-500">Avg Return:</span>
+                          <span className="text-gray-500">{(t as any).ai.avgReturn}:</span>
                           <span className="ml-2 font-medium">{metric.avgReturn.toFixed(1)}%</span>
                         </div>
                         <div>
-                          <span className="text-gray-500">Best Return:</span>
+                          <span className="text-gray-500">{(t as any).ai.bestReturn}:</span>
                           <span className="ml-2 font-medium text-green-600">{metric.bestReturn.toFixed(1)}%</span>
                         </div>
                       </div>

@@ -66,13 +66,13 @@ export default function AITradeAnalysis() {
 
     // Strategy Performance Analysis
     const strategyPerformance = analytics.recentTrades.reduce((acc, trade) => {
-      if (trade.strategy && trade.status === 'CLOSED' && trade.pnl !== undefined) {
-        if (!acc[trade.strategy]) {
-          acc[trade.strategy] = { trades: 0, totalPnL: 0, wins: 0 };
+      if (trade.strategyId && trade.status === 'closed' && trade.pnl !== undefined) {
+        if (!acc[trade.strategyId]) {
+          acc[trade.strategyId] = { trades: 0, totalPnL: 0, wins: 0 };
         }
-        acc[trade.strategy].trades++;
-        acc[trade.strategy].totalPnL += trade.pnl;
-        if (trade.pnl > 0) acc[trade.strategy].wins++;
+        acc[trade.strategyId].trades++;
+        acc[trade.strategyId].totalPnL += trade.pnl;
+        if (trade.pnl > 0) acc[trade.strategyId].wins++;
       }
       return acc;
     }, {} as Record<string, { trades: number; totalPnL: number; wins: number }>);
@@ -85,12 +85,16 @@ export default function AITradeAnalysis() {
       insights.push({
         id: 'strategy-1',
         type: 'pattern',
-        title: `Best Strategy: ${bestStrategy[0]}`,
-        description: `"${bestStrategy[0]}" shows ${bestStrategy[1].totalPnL.toLocaleString('en-US', { style: 'currency', currency: 'USD' })} profit with ${winRate.toFixed(1)}% win rate across ${bestStrategy[1].trades} trades.`,
+        title: t.ai.highWinRateStrategy,
+        description: t.ai.strategyDescription
+          .replace('{strategy}', bestStrategy[0])
+          .replace('{pnl}', bestStrategy[1].totalPnL.toLocaleString('en-US', { style: 'currency', currency: 'USD' }))
+          .replace('{winRate}', winRate.toFixed(1))
+          .replace('{trades}', bestStrategy[1].trades.toString()),
         confidence: Math.min(95, 70 + winRate * 0.3),
         impact: bestStrategy[1].totalPnL > 1000 ? 'high' : 'medium',
         actionable: true,
-        relatedTrades: analytics.recentTrades.filter(t => t.strategy === bestStrategy[0]).map(t => t.id)
+        relatedTrades: analytics.recentTrades.filter(t => t.strategyId === bestStrategy[0] && t.id).map(t => t.id!)
       });
     }
 
@@ -104,8 +108,10 @@ export default function AITradeAnalysis() {
       insights.push({
         id: 'risk-1',
         type: 'risk',
-        title: 'High Concentration Risk',
-        description: `${assetConcentration.percentage.toFixed(1)}% of trades in ${assetConcentration.name}. Consider diversification to reduce portfolio risk.`,
+        title: t.ai.highConcentrationRisk,
+        description: t.ai.concentrationRiskDescription
+          .replace('{percentage}', assetConcentration.percentage.toFixed(1))
+          .replace('{asset}', assetConcentration.name),
         confidence: 92,
         impact: 'high',
         actionable: true
@@ -117,8 +123,8 @@ export default function AITradeAnalysis() {
       insights.push({
         id: 'performance-1',
         type: 'performance',
-        title: 'Excellent Win Rate',
-        description: `${analytics.winRate.toFixed(1)}% win rate is above average. Current strategy is showing strong results.`,
+        title: t.ai.excellentWinRate,
+        description: t.ai.winRateDescription.replace('{winRate}', analytics.winRate.toFixed(1)),
         confidence: 89,
         impact: 'medium',
         actionable: false
@@ -127,8 +133,8 @@ export default function AITradeAnalysis() {
       insights.push({
         id: 'opportunity-1',
         type: 'opportunity',
-        title: 'Win Rate Improvement Needed',
-        description: `${analytics.winRate.toFixed(1)}% win rate suggests room for improvement. Consider refining entry criteria.`,
+        title: t.ai.winRateImprovement,
+        description: t.ai.winRateImprovementDescription.replace('{winRate}', analytics.winRate.toFixed(1)),
         confidence: 85,
         impact: 'high',
         actionable: true
@@ -140,8 +146,8 @@ export default function AITradeAnalysis() {
       insights.push({
         id: 'performance-2',
         type: 'performance',
-        title: 'Strong Profit Factor',
-        description: `Profit factor of ${analytics.profitFactor.toFixed(2)} indicates excellent risk-reward management.`,
+        title: t.ai.strongProfitFactor,
+        description: t.ai.strongProfitFactorDescription.replace('{profitFactor}', analytics.profitFactor.toFixed(2)),
         confidence: 88,
         impact: 'high',
         actionable: false
@@ -150,8 +156,8 @@ export default function AITradeAnalysis() {
       insights.push({
         id: 'risk-2',
         type: 'risk',
-        title: 'Profit Factor Below 1.0',
-        description: `Current profit factor: ${analytics.profitFactor.toFixed(2)}. Review strategy to ensure profitability.`,
+        title: t.ai.profitFactorBelowOne,
+        description: t.ai.profitFactorDescription.replace('{profitFactor}', analytics.profitFactor.toFixed(2)),
         confidence: 95,
         impact: 'high',
         actionable: true
@@ -169,69 +175,71 @@ export default function AITradeAnalysis() {
       const recommendations: string[] = [];
 
       // Analyze based on strategy performance
-      if (trade.strategy && strategyPerformance[trade.strategy]) {
-        const stratData = strategyPerformance[trade.strategy];
+      if (trade.strategyId && strategyPerformance[trade.strategyId]) {
+        const stratData = strategyPerformance[trade.strategyId];
         const strategyWinRate = (stratData.wins / stratData.trades) * 100;
         
         if (strategyWinRate > 60) {
           aiScore += 2.0;
           sentiment = 'bullish';
           confidence += 20;
-          reasons.push(`Strategy "${trade.strategy}" has ${strategyWinRate.toFixed(1)}% win rate`);
+          reasons.push((t as any).ai?.tradeAnalysisReasons?.strategyHighWinRate?.replace('{strategy}', trade.strategyId || '').replace('{winRate}', strategyWinRate.toFixed(1)) || `Strategy "${trade.strategyId}" has ${strategyWinRate.toFixed(1)}% win rate`);
         } else if (strategyWinRate < 40) {
           aiScore -= 1.5;
           sentiment = 'bearish';
-          reasons.push(`Strategy "${trade.strategy}" has low ${strategyWinRate.toFixed(1)}% win rate`);
+          reasons.push((t as any).ai?.tradeAnalysisReasons?.strategyLowWinRate?.replace('{strategy}', trade.strategyId || '').replace('{winRate}', strategyWinRate.toFixed(1)) || `Strategy "${trade.strategyId}" has low ${strategyWinRate.toFixed(1)}% win rate`);
         }
       }
 
       // Analyze based on actual outcome if closed
-      if (trade.status === 'CLOSED' && trade.pnl !== undefined) {
+      if (trade.status === 'closed' && trade.pnl !== undefined) {
         if (trade.pnl > 0) {
           aiScore += 1.0;
           predictedOutcome = 'profit';
           confidence += 15;
-          reasons.push('Trade closed profitably');
+          reasons.push((t as any).ai?.tradeAnalysisReasons?.tradeClosedProfitably || 'Trade closed profitably');
         } else {
           aiScore -= 1.0;
           predictedOutcome = 'loss';
-          reasons.push('Trade closed at loss');
+          reasons.push((t as any).ai?.tradeAnalysisReasons?.tradeClosedAtLoss || 'Trade closed at loss');
         }
       }
 
       // Risk level based on asset type and size
-      if (trade.assetType === 'CRYPTO') {
+      if (trade.assetType === 'crypto') {
         riskLevel = 'high';
-        reasons.push('Crypto assets have high volatility');
-        recommendations.push('Monitor closely for price swings');
-      } else if (trade.assetType === 'STOCK') {
+        reasons.push((t as any).ai?.tradeAnalysisReasons?.cryptoHighVolatility || 'Crypto assets have high volatility');
+        recommendations.push((t as any).ai?.tradeAnalysisRecommendations?.monitorForPriceSwings || 'Monitor closely for price swings');
+      } else if (trade.assetType === 'stock') {
         riskLevel = 'medium';
-        reasons.push('Stock trading with moderate risk');
+        reasons.push((t as any).ai?.tradeAnalysisReasons?.stockModerateRisk || 'Stock trading with moderate risk');
       }
 
       // Position sizing recommendations
-      const positionValue = trade.quantity * trade.entryPrice;
+      const positionValue = trade.size * trade.entryPrice;
       if (positionValue > 10000) {
-        riskLevel = riskLevel === 'low' ? 'medium' : 'high';
-        recommendations.push('Large position - consider partial profit taking');
+        if (riskLevel === 'medium') {
+          riskLevel = 'high';
+        }
+        recommendations.push((t as any).ai?.tradeAnalysisRecommendations?.largePositionPartialProfit || 'Large position - consider partial profit taking');
       }
 
       // General recommendations
-      if (trade.status === 'OPEN') {
-        recommendations.push('Set stop loss at -5%');
-        recommendations.push('Consider taking profit at +10%');
+      if (trade.status === 'open') {
+        recommendations.push((t as any).ai?.tradeAnalysisRecommendations?.setStopLoss || 'Set stop loss at -5%');
+        recommendations.push((t as any).ai?.tradeAnalysisRecommendations?.considerTakeProfit || 'Consider taking profit at +10%');
       }
 
       tradeAnalysis.push({
-        tradeId: trade.id,
+        tradeId: trade.id || '',
         symbol: trade.symbol,
         aiScore: Math.max(1, Math.min(10, aiScore)),
         sentiment,
         riskLevel,
         predictedOutcome,
         confidence: Math.max(10, Math.min(95, confidence)),
-        reasons: reasons.length > 0 ? reasons : ['Standard market conditions'],
-        recommendations: recommendations.length > 0 ? recommendations : ['Follow your trading plan']
+        reasons: reasons.length > 0 ? reasons : [(t as any).ai?.tradeAnalysisReasons?.standardMarketConditions || 'Standard market conditions'],
+        recommendations: recommendations.length > 0 ? recommendations : [(t as any).ai?.tradeAnalysisRecommendations?.followTradingPlan || 'Follow your trading plan']
       });
     });
 
@@ -291,7 +299,7 @@ export default function AITradeAnalysis() {
             </Badge>
           </h2>
           <p className="text-gray-600 mt-1">
-            AI-powered insights from your {analytics?.totalTrades || 0} trades • Real-time analysis
+            {t.ai.insightsFromTrades.replace('{count}', (analytics?.totalTrades || 0).toString())}
           </p>
         </div>
         <div className="flex items-center gap-4">
@@ -366,7 +374,7 @@ export default function AITradeAnalysis() {
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-gray-500">
-                          {insight.confidence}% confidence
+                          {insight.confidence}% {t.ai.confidence}
                         </span>
                         {insight.impact === 'high' && (
                           <Zap className="h-4 w-4 text-orange-500" />
@@ -384,10 +392,10 @@ export default function AITradeAnalysis() {
                     {insight.actionable && (
                       <div className="flex items-center justify-between">
                         <Badge variant="outline" className="text-xs">
-                          Actionable
+                          {t.ai.actionable}
                         </Badge>
                         <Button size="sm" variant="ghost" className="text-xs">
-                          View Details
+                          {t.ai.viewDetails}
                         </Button>
                       </div>
                     )}
@@ -426,7 +434,7 @@ export default function AITradeAnalysis() {
                       <div>
                         <span className="text-xs text-gray-500">{t.ai.riskLevel}</span>
                         <Badge className={`ml-2 ${getRiskColor(analysis.riskLevel)}`}>
-                          {analysis.riskLevel.toUpperCase()}
+                          {analysis.riskLevel === 'high' ? t.ai.highRisk : analysis.riskLevel === 'medium' ? t.ai.mediumRisk : t.ai.lowRisk}
                         </Badge>
                       </div>
                       <div>
@@ -443,7 +451,7 @@ export default function AITradeAnalysis() {
                         {analysis.reasons.slice(0, 2).map((reason, index) => (
                           <li key={index} className="flex items-start gap-1">
                             <span className="text-blue-500">•</span>
-                            {reason}
+                            {reason === 'Standard market conditions' ? t.ai.standardMarketConditions : reason}
                           </li>
                         ))}
                       </ul>
@@ -455,7 +463,7 @@ export default function AITradeAnalysis() {
                         {analysis.recommendations.slice(0, 2).map((rec, index) => (
                           <li key={index} className="flex items-start gap-1">
                             <span className="text-green-500">✓</span>
-                            {rec}
+                            {rec === 'Large position - consider partial profit taking' ? t.ai.largePositionPartialProfit : rec}
                           </li>
                         ))}
                       </ul>

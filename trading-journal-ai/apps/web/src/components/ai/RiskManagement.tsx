@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 import { 
   Shield, 
   AlertTriangle, 
@@ -50,12 +51,28 @@ interface RiskScenario {
 }
 
 export default function RiskManagement() {
+  const { t, loading: languageLoading } = useLanguage();
   const [riskMetrics, setRiskMetrics] = useState<RiskMetric[]>([]);
   const [positionSizing, setPositionSizing] = useState<PositionSizing[]>([]);
   const [riskScenarios, setRiskScenarios] = useState<RiskScenario[]>([]);
   const [portfolioValue, setPortfolioValue] = useState(100000);
   const [maxRiskPerTrade, setMaxRiskPerTrade] = useState(2);
   const [loading, setLoading] = useState(false);
+
+  // Defensive check for translations
+  const translations = (t as any)?.ai?.riskManagement;
+  
+  // Only show loading if translations are not available
+  if (!translations) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <Shield className="h-12 w-12 text-blue-500 animate-pulse mx-auto mb-4" />
+          <p className="text-gray-600">Đang tải bản dịch...</p>
+        </div>
+      </div>
+    );
+  }
 
   useEffect(() => {
     calculateRiskMetrics();
@@ -213,13 +230,13 @@ export default function RiskManagement() {
         <div>
           <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
             <Shield className="h-6 w-6 text-green-600" />
-            Risk Management AI
+            {translations.title}
           </h2>
-          <p className="text-gray-600 mt-1">AI-powered risk analysis and position management</p>
+          <p className="text-gray-600 mt-1">{translations.subtitle}</p>
         </div>
         <Button onClick={calculateRiskMetrics} disabled={loading} className="flex items-center gap-2">
           <Zap className={`h-4 w-4 ${loading ? 'animate-pulse' : ''}`} />
-          Analyze Risk
+          {translations.analyzeButton}
         </Button>
       </div>
 
@@ -228,14 +245,14 @@ export default function RiskManagement() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calculator className="h-5 w-5 text-blue-500" />
-            Risk Parameters
+            {translations.riskParameters.title}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Portfolio Value
+                {translations.riskParameters.portfolioValue}
               </label>
               <div className="relative">
                 <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -249,7 +266,7 @@ export default function RiskManagement() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Max Risk Per Trade (%)
+                {translations.riskParameters.maxRiskPerTrade}
               </label>
               <Input
                 type="number"
