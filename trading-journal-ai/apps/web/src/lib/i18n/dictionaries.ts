@@ -411,6 +411,47 @@ export const dictionaries = {
         subtitle: "Portfolio risk analysis and position sizing calculator",
         analyzeButton: "Analyze Risk",
         loading: "Calculating risk metrics...",
+        
+        // Risk Metrics
+        portfolioRisk: "Portfolio Risk",
+        portfolioRiskDesc: "Total portfolio risk exposure",
+        concentration: "Position Concentration",
+        concentrationDesc: "Largest position as % of portfolio",
+        winRate: "Win Rate",
+        winRateDesc: "Percentage of profitable trades",
+        avgLoss: "Average Loss",
+        avgLossDesc: "Average loss per losing trade",
+        consecutiveLosses: "Max Consecutive Losses",
+        consecutiveLossesDesc: "Maximum consecutive losing trades",
+        
+        // Recommendations
+        reduceExposure: "Consider reducing position sizes",
+        canIncrease: "Can consider increasing positions",
+        diversify: "Diversify positions",
+        goodDiversification: "Good diversification",
+        improveStrategy: "Review and improve trading strategy",
+        goodPerformance: "Good trading performance",
+        tightenStops: "Implement tighter stop losses",
+        goodRiskControl: "Good risk control",
+        reviewStrategy: "Review strategy and take a break",
+        goodConsistency: "Good consistency",
+        
+        // Risk Scenarios
+        marketCrash: "Market Crash (20% Down)",
+        techCorrection: "Tech Sector Correction",
+        interestRateRisk: "Interest Rate Spike",
+        
+        // Mitigation strategies
+        hedgeWithPuts: "Hedge with puts",
+        reducePositions: "Reduce position sizes",
+        addDefensive: "Add defensive stocks",
+        diversifySectors: "Diversify sectors",
+        takeProfits: "Take profits on winners",
+        setStops: "Set protective stops",
+        rotateToValue: "Rotate to value",
+        considerBonds: "Consider bonds",
+        reduceLeverage: "Reduce leverage",
+        
         riskParameters: {
           title: "Risk Parameters",
           portfolioValue: "Portfolio Value ($)",
@@ -448,16 +489,18 @@ export const dictionaries = {
           maxPosition: "Max Position Size",
           entryPrice: "Entry Price",
           stopLoss: "Stop Loss",
-          applyButton: "Apply Position"
+          applyButton: "Apply Position",
+          noOpenPositions: "No open positions to analyze",
+          addTradesMessage: "Add some open trades to see position sizing recommendations"
         },
         riskScenarios: {
           title: "Risk Scenarios",
           chance: "chance",
           probability: "Probability",
-          impact: "Impact",
+          impact: "Potential Loss",
           portfolioLoss: "Portfolio Loss",
           affectedPositions: "Affected Positions",
-          mitigation: "Mitigation Strategies",
+          mitigationStrategies: "Mitigation Strategies",
           marketCrash: {
             name: "Market Crash (20% decline)"
           },
@@ -1072,6 +1115,47 @@ export const dictionaries = {
         subtitle: "Phân tích rủi ro danh mục và máy tính kích thước vị thế",
         analyzeButton: "Phân tích rủi ro",
         loading: "Đang tính toán chỉ số rủi ro...",
+        
+        // Risk Metrics
+        portfolioRisk: "Rủi ro Danh mục",
+        portfolioRiskDesc: "Tổng mức độ rủi ro của danh mục",
+        concentration: "Tập trung Vị thế",
+        concentrationDesc: "Vị thế lớn nhất chiếm % của danh mục",
+        winRate: "Tỷ lệ Thắng",
+        winRateDesc: "Phần trăm giao dịch có lãi",
+        avgLoss: "Lỗ Trung bình",
+        avgLossDesc: "Mức lỗ trung bình mỗi giao dịch thua",
+        consecutiveLosses: "Số Lỗ Liên tiếp Tối đa",
+        consecutiveLossesDesc: "Số giao dịch thua liên tiếp tối đa",
+        
+        // Recommendations
+        reduceExposure: "Nên giảm kích thước vị thế",
+        canIncrease: "Có thể cân nhắc tăng vị thế",
+        diversify: "Đa dạng hóa vị thế",
+        goodDiversification: "Đa dạng hóa tốt",
+        improveStrategy: "Xem xét và cải thiện chiến lược giao dịch",
+        goodPerformance: "Hiệu suất giao dịch tốt",
+        tightenStops: "Thiết lập stop loss chặt chẽ hơn",
+        goodRiskControl: "Kiểm soát rủi ro tốt",
+        reviewStrategy: "Xem xét lại chiến lược và nghỉ ngơi",
+        goodConsistency: "Tính nhất quán tốt",
+        
+        // Risk Scenarios
+        marketCrash: "Sụp đổ Thị trường (Giảm 20%)",
+        techCorrection: "Điều chỉnh Ngành Công nghệ",
+        interestRateRisk: "Tăng đột biến Lãi suất",
+        
+        // Mitigation strategies
+        hedgeWithPuts: "Bảo hiểm bằng Put options",
+        reducePositions: "Giảm kích thước vị thế",
+        addDefensive: "Thêm cổ phiếu phòng thủ",
+        diversifySectors: "Đa dạng hóa ngành",
+        takeProfits: "Chốt lời những vị thế thắng",
+        setStops: "Đặt stop loss bảo vệ",
+        rotateToValue: "Chuyển sang cổ phiếu giá trị",
+        considerBonds: "Cân nhắc trái phiếu",
+        reduceLeverage: "Giảm đòn bẩy",
+        
         riskParameters: {
           title: "Tham số rủi ro",
           portfolioValue: "Giá trị danh mục ($)",
@@ -1109,16 +1193,18 @@ export const dictionaries = {
           maxPosition: "Kích thước vị thế tối đa",
           entryPrice: "Giá vào lệnh",
           stopLoss: "Cắt lỗ",
-          applyButton: "Áp dụng vị thế"
+          applyButton: "Áp dụng vị thế",
+          noOpenPositions: "Không có vị thế mở để phân tích",
+          addTradesMessage: "Thêm một số giao dịch mở để xem khuyến nghị kích thước vị thế"
         },
         riskScenarios: {
           title: "Kịch bản rủi ro",
           chance: "khả năng",
           probability: "Xác suất",
-          impact: "Tác động",
+          impact: "Tổn thất tiềm năng",
           portfolioLoss: "Tổn thất danh mục",
           affectedPositions: "Vị thế bị ảnh hưởng",
-          mitigation: "Chiến lược giảm thiểu",
+          mitigationStrategies: "Chiến lược giảm thiểu",
           marketCrash: {
             name: "Sụp đổ thị trường (giảm 20%)"
           },
