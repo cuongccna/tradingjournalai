@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Navigation from '@/components/Navigation';
 import LanguageSettings from '@/components/settings/LanguageSettings';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,10 +22,12 @@ import {
   Eye,
   EyeOff,
   Check,
-  AlertTriangle
+  AlertTriangle,
+  Key
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import { api } from '@/lib/api';
 
 interface UserSettings {
   profile: {
@@ -52,12 +55,18 @@ interface UserSettings {
     alertThreshold: number;
     currency: string;
   };
+  api: {
+    alphaVantageApiKey: string;
+    newsApiKey: string;
+    polygonApiKey: string;
+  };
 }
 
-export default function SettingsPage() {
+function SettingsContent() {
   const { user } = useAuth();
   const { t } = useLanguage();
-  const [activeTab, setActiveTab] = useState<'profile' | 'notifications' | 'security' | 'trading' | 'data' | 'language'>('profile');
+  const searchParams = useSearchParams();
+  const [activeTab, setActiveTab] = useState<'profile' | 'notifications' | 'security' | 'trading' | 'api' | 'data' | 'language'>('profile');
   const [settings, setSettings] = useState<UserSettings>({
     profile: {
       displayName: '',
@@ -83,21 +92,97 @@ export default function SettingsPage() {
       autoStopLoss: false,
       alertThreshold: 5,
       currency: 'USD'
+    },
+    api: {
+      alphaVantageApiKey: '',
+      newsApiKey: '',
+      polygonApiKey: ''
     }
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [showApiKeys, setShowApiKeys] = useState({
+    alphaVantage: false,
+    newsApi: false,
+    polygon: false
+  });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+
+  // Check URL query parameter for tab
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab && ['profile', 'notifications', 'security', 'trading', 'api', 'data', 'language'].includes(tab)) {
+      setActiveTab(tab as 'profile' | 'notifications' | 'security' | 'trading' | 'api' | 'data' | 'language');
+    }
+  }, [searchParams]);
+
+  // Load API keys on component mount
+  useEffect(() => {
+    const loadApiKeys = async () => {
+      try {
+        const response = await api.get('/user/api-keys');
+        
+        if (response.success) {
+          console.log('API status loaded:', response.data);
+          // Show that keys are configured (but don't expose actual values)
+          setSettings(prev => ({
+            ...prev,
+            api: {
+              alphaVantageApiKey: response.data.hasAlphaVantage ? '••••••••••••••••' : '',
+              newsApiKey: response.data.hasNewsApi ? '••••••••••••••••' : '',
+              polygonApiKey: response.data.hasPolygon ? '••••••••••••••••' : ''
+            }
+          }));
+        }
+      } catch (error) {
+        console.error('Error loading API status:', error);
+      }
+    };
+
+    loadApiKeys();
+  }, []);
 
   const handleSave = async () => {
     setSaving(true);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    setSaving(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+    try {
+      // Save API configuration to backend
+      if (settings.api.alphaVantageApiKey || settings.api.newsApiKey || settings.api.polygonApiKey) {
+        // Only send keys that are not placeholder values
+        const apiKeysToSave: any = {};
+        
+        if (settings.api.alphaVantageApiKey && !settings.api.alphaVantageApiKey.includes('••••')) {
+          apiKeysToSave.alphaVantageApiKey = settings.api.alphaVantageApiKey;
+        }
+        if (settings.api.newsApiKey && !settings.api.newsApiKey.includes('••••')) {
+          apiKeysToSave.newsApiKey = settings.api.newsApiKey;
+        }
+        if (settings.api.polygonApiKey && !settings.api.polygonApiKey.includes('••••')) {
+          apiKeysToSave.polygonApiKey = settings.api.polygonApiKey;
+        }
+
+        if (Object.keys(apiKeysToSave).length > 0) {
+          const result = await api.post('/user/api-keys', apiKeysToSave);
+          
+          if (!result.success) {
+            throw new Error(result.message || 'Failed to save API configuration');
+          }
+
+          console.log('API keys saved successfully:', result);
+        }
+      }
+
+      // Save other settings (simulate API call for now)
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      // Show error message here if needed
+    } finally {
+      setSaving(false);
+    }
   };
 
   const updateSettings = (section: keyof UserSettings, key: string, value: any) => {
@@ -161,6 +246,7 @@ export default function SettingsPage() {
                     { id: 'notifications', label: t.settings.notifications, icon: Bell },
                     { id: 'security', label: t.settings.security, icon: Shield },
                     { id: 'trading', label: 'Trading', icon: Settings },
+                    { id: 'api', label: 'API Settings', icon: Key },
                     { id: 'data', label: 'Data & Privacy', icon: Database }
                   ].map((tab) => {
                     const Icon = tab.icon;
@@ -425,6 +511,177 @@ export default function SettingsPage() {
               </Card>
             )}
 
+            {activeTab === 'api' && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Key className="h-5 w-5" />
+                    API Settings
+                  </CardTitle>
+                  <p className="text-gray-600 text-sm">
+                    Configure API keys for market data and news sources
+                  </p>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Alpha Vantage */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-medium text-gray-900">Alpha Vantage</h4>
+                        <p className="text-sm text-gray-600">News & sentiment analysis, 25 requests/day free</p>
+                      </div>
+                      <a
+                        href="https://www.alphavantage.co/support/#api-key"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1"
+                      >
+                        Get API Key
+                        <Database className="h-3 w-3" />
+                      </a>
+                    </div>
+                    <div className="relative">
+                      <Input
+                        type={showApiKeys.alphaVantage ? 'text' : 'password'}
+                        value={settings.api.alphaVantageApiKey}
+                        onChange={(e) => updateSettings('api', 'alphaVantageApiKey', e.target.value)}
+                        placeholder="Enter your Alpha Vantage API key..."
+                        className="pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowApiKeys(prev => ({ ...prev, alphaVantage: !prev.alphaVantage }))}
+                        className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                      >
+                        {showApiKeys.alphaVantage ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {['News & Sentiment', 'Stocks & Crypto', 'Real-time data'].map((feature) => (
+                        <Badge key={feature} variant="outline" className="text-xs">
+                          {feature}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* NewsAPI */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-medium text-gray-900">NewsAPI</h4>
+                        <p className="text-sm text-gray-600">Financial news from Bloomberg, Reuters, CNBC, 1,000 requests/day free</p>
+                      </div>
+                      <a
+                        href="https://newsapi.org/register"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1"
+                      >
+                        Get API Key
+                        <Database className="h-3 w-3" />
+                      </a>
+                    </div>
+                    <div className="relative">
+                      <Input
+                        type={showApiKeys.newsApi ? 'text' : 'password'}
+                        value={settings.api.newsApiKey}
+                        onChange={(e) => updateSettings('api', 'newsApiKey', e.target.value)}
+                        placeholder="Enter your NewsAPI key..."
+                        className="pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowApiKeys(prev => ({ ...prev, newsApi: !prev.newsApi }))}
+                        className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                      >
+                        {showApiKeys.newsApi ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {['70,000+ sources', 'Advanced search', 'Time filtering'].map((feature) => (
+                        <Badge key={feature} variant="outline" className="text-xs">
+                          {feature}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Polygon.io */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-medium text-gray-900">Polygon.io</h4>
+                        <p className="text-sm text-gray-600">Market data and news from exchanges, 5 calls/min free</p>
+                      </div>
+                      <a
+                        href="https://polygon.io/dashboard/signup"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1"
+                      >
+                        Get API Key
+                        <Database className="h-3 w-3" />
+                      </a>
+                    </div>
+                    <div className="relative">
+                      <Input
+                        type={showApiKeys.polygon ? 'text' : 'password'}
+                        value={settings.api.polygonApiKey}
+                        onChange={(e) => updateSettings('api', 'polygonApiKey', e.target.value)}
+                        placeholder="Enter your Polygon.io API key..."
+                        className="pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowApiKeys(prev => ({ ...prev, polygon: !prev.polygon }))}
+                        className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                      >
+                        {showApiKeys.polygon ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {['Options & Futures', 'Real-time data', 'Sentiment analysis'].map((feature) => (
+                        <Badge key={feature} variant="outline" className="text-xs">
+                          {feature}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Help Section */}
+                  <div className="p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-r-lg">
+                    <div className="flex items-start">
+                      <AlertTriangle className="h-5 w-5 text-yellow-400 mt-0.5 mr-3" />
+                      <div>
+                        <p className="text-sm font-medium text-yellow-800">
+                          How to get API keys:
+                        </p>
+                        <ol className="text-sm text-yellow-700 mt-1 space-y-1">
+                          <li>1. Click "Get API Key" links above</li>
+                          <li>2. Register for free accounts</li>
+                          <li>3. Copy API keys from dashboards</li>
+                          <li>4. Paste them here and save</li>
+                        </ol>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {activeTab === 'data' && (
               <Card>
                 <CardHeader>
@@ -489,5 +746,13 @@ export default function SettingsPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SettingsPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SettingsContent />
+    </Suspense>
   );
 }

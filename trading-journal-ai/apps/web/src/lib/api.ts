@@ -56,11 +56,32 @@ class ApiClient {
     );
   }
 
+  // Generic HTTP methods
+  async get(url: string, config?: any) {
+    const response = await this.client.get(url, config);
+    return response.data;
+  }
+
+  async post(url: string, data?: any, config?: any) {
+    const response = await this.client.post(url, data, config);
+    return response.data;
+  }
+
+  async put(url: string, data?: any, config?: any) {
+    const response = await this.client.put(url, data, config);
+    return response.data;
+  }
+
+  async delete(url: string, config?: any) {
+    const response = await this.client.delete(url, config);
+    return response.data;
+  }
+
   // Auth endpoints
   auth = {
     register: (data: any) => this.client.post('/auth/register', data),
-    getProfile: () => this.client.get('/auth/profile'),
-    updateProfile: (data: any) => this.client.put('/auth/profile', data),
+    getProfile: () => this.client.get('/user/profile'),
+    updateProfile: (data: any) => this.client.patch('/user/profile', data),
   };
 
   // Trade endpoints

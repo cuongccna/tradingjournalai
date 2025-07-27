@@ -2,3 +2,153 @@
 {"level":"error","message":{"error":"Cannot read properties of undefined (reading 'uid')","ip":"::1","method":"POST","stack":"TypeError: Cannot read properties of undefined (reading 'uid')\n    at D:\\projects\\tradingjournalai\\trading-journal-ai\\apps\\backend\\dist\\routes\\trades.routes.js:13:33\n    at Layer.handle [as handle_request] (D:\\projects\\tradingjournalai\\trading-journal-ai\\node_modules\\.pnpm\\express@4.21.2\\node_modules\\express\\lib\\router\\layer.js:95:5)\n    at next (D:\\projects\\tradingjournalai\\trading-journal-ai\\node_modules\\.pnpm\\express@4.21.2\\node_modules\\express\\lib\\router\\route.js:149:13)\n    at validateTrade (D:\\projects\\tradingjournalai\\trading-journal-ai\\apps\\backend\\dist\\validators\\trade.validator.js:57:5)\n    at Layer.handle [as handle_request] (D:\\projects\\tradingjournalai\\trading-journal-ai\\node_modules\\.pnpm\\express@4.21.2\\node_modules\\express\\lib\\router\\layer.js:95:5)\n    at next (D:\\projects\\tradingjournalai\\trading-journal-ai\\node_modules\\.pnpm\\express@4.21.2\\node_modules\\express\\lib\\router\\route.js:149:13)\n    at Route.dispatch (D:\\projects\\tradingjournalai\\trading-journal-ai\\node_modules\\.pnpm\\express@4.21.2\\node_modules\\express\\lib\\router\\route.js:119:3)\n    at Layer.handle [as handle_request] (D:\\projects\\tradingjournalai\\trading-journal-ai\\node_modules\\.pnpm\\express@4.21.2\\node_modules\\express\\lib\\router\\layer.js:95:5)\n    at D:\\projects\\tradingjournalai\\trading-journal-ai\\node_modules\\.pnpm\\express@4.21.2\\node_modules\\express\\lib\\router\\index.js:284:15\n    at Function.process_params (D:\\projects\\tradingjournalai\\trading-journal-ai\\node_modules\\.pnpm\\express@4.21.2\\node_modules\\express\\lib\\router\\index.js:346:12)","url":"/api/trades"},"timestamp":"2025-07-24T15:04:42.476Z"}
 {"level":"error","message":{"error":"Cannot read properties of undefined (reading 'uid')","ip":"::1","method":"POST","stack":"TypeError: Cannot read properties of undefined (reading 'uid')\n    at D:\\projects\\tradingjournalai\\trading-journal-ai\\apps\\backend\\dist\\routes\\trades.routes.js:13:33\n    at Layer.handle [as handle_request] (D:\\projects\\tradingjournalai\\trading-journal-ai\\node_modules\\.pnpm\\express@4.21.2\\node_modules\\express\\lib\\router\\layer.js:95:5)\n    at next (D:\\projects\\tradingjournalai\\trading-journal-ai\\node_modules\\.pnpm\\express@4.21.2\\node_modules\\express\\lib\\router\\route.js:149:13)\n    at validateTrade (D:\\projects\\tradingjournalai\\trading-journal-ai\\apps\\backend\\dist\\validators\\trade.validator.js:57:5)\n    at Layer.handle [as handle_request] (D:\\projects\\tradingjournalai\\trading-journal-ai\\node_modules\\.pnpm\\express@4.21.2\\node_modules\\express\\lib\\router\\layer.js:95:5)\n    at next (D:\\projects\\tradingjournalai\\trading-journal-ai\\node_modules\\.pnpm\\express@4.21.2\\node_modules\\express\\lib\\router\\route.js:149:13)\n    at Route.dispatch (D:\\projects\\tradingjournalai\\trading-journal-ai\\node_modules\\.pnpm\\express@4.21.2\\node_modules\\express\\lib\\router\\route.js:119:3)\n    at Layer.handle [as handle_request] (D:\\projects\\tradingjournalai\\trading-journal-ai\\node_modules\\.pnpm\\express@4.21.2\\node_modules\\express\\lib\\router\\layer.js:95:5)\n    at D:\\projects\\tradingjournalai\\trading-journal-ai\\node_modules\\.pnpm\\express@4.21.2\\node_modules\\express\\lib\\router\\index.js:284:15\n    at Function.process_params (D:\\projects\\tradingjournalai\\trading-journal-ai\\node_modules\\.pnpm\\express@4.21.2\\node_modules\\express\\lib\\router\\index.js:346:12)","url":"/api/trades"},"timestamp":"2025-07-24T15:05:40.064Z"}
 {"level":"error","message":{"error":"Failed to create trade","ip":"::1","method":"POST","stack":"Error: Failed to create trade\n    at TradeService.createTrade (D:\\projects\\tradingjournalai\\trading-journal-ai\\apps\\backend\\dist\\services\\trade.service.js:36:19)\n    at D:\\projects\\tradingjournalai\\trading-journal-ai\\apps\\backend\\dist\\routes\\trades.routes.js:16:42\n    at Layer.handle [as handle_request] (D:\\projects\\tradingjournalai\\trading-journal-ai\\node_modules\\.pnpm\\express@4.21.2\\node_modules\\express\\lib\\router\\layer.js:95:5)\n    at next (D:\\projects\\tradingjournalai\\trading-journal-ai\\node_modules\\.pnpm\\express@4.21.2\\node_modules\\express\\lib\\router\\route.js:149:13)\n    at validateTrade (D:\\projects\\tradingjournalai\\trading-journal-ai\\apps\\backend\\dist\\validators\\trade.validator.js:57:5)\n    at Layer.handle [as handle_request] (D:\\projects\\tradingjournalai\\trading-journal-ai\\node_modules\\.pnpm\\express@4.21.2\\node_modules\\express\\lib\\router\\layer.js:95:5)\n    at next (D:\\projects\\tradingjournalai\\trading-journal-ai\\node_modules\\.pnpm\\express@4.21.2\\node_modules\\express\\lib\\router\\route.js:149:13)\n    at Route.dispatch (D:\\projects\\tradingjournalai\\trading-journal-ai\\node_modules\\.pnpm\\express@4.21.2\\node_modules\\express\\lib\\router\\route.js:119:3)\n    at Layer.handle [as handle_request] (D:\\projects\\tradingjournalai\\trading-journal-ai\\node_modules\\.pnpm\\express@4.21.2\\node_modules\\express\\lib\\router\\layer.js:95:5)\n    at D:\\projects\\tradingjournalai\\trading-journal-ai\\node_modules\\.pnpm\\express@4.21.2\\node_modules\\express\\lib\\router\\index.js:284:15","url":"/api/trades"},"timestamp":"2025-07-24T16:00:20.513Z"}
+{"level":"warn","message":"NewsAPI key not configured","timestamp":"2025-07-27T06:49:58.174Z"}
+{"level":"warn","message":"Polygon API key not configured","timestamp":"2025-07-27T06:49:58.176Z"}
+{"level":"warn","message":"NewsAPI key not configured","timestamp":"2025-07-27T06:50:00.186Z"}
+{"level":"warn","message":"Polygon API key not configured","timestamp":"2025-07-27T06:50:00.187Z"}
+{"level":"warn","message":"NewsAPI key not configured","timestamp":"2025-07-27T06:50:05.902Z"}
+{"level":"warn","message":"Polygon API key not configured","timestamp":"2025-07-27T06:50:05.902Z"}
+{"level":"warn","message":"NewsAPI key not configured","timestamp":"2025-07-27T06:50:29.061Z"}
+{"level":"warn","message":"Polygon API key not configured","timestamp":"2025-07-27T06:50:29.062Z"}
+{"level":"warn","message":"NewsAPI key not configured","timestamp":"2025-07-27T06:50:30.249Z"}
+{"level":"warn","message":"Polygon API key not configured","timestamp":"2025-07-27T06:50:30.250Z"}
+{"level":"info","message":"🚀 Starting to fetch news from all sources...","timestamp":"2025-07-27T07:01:45.844Z"}
+{"level":"info","message":"🔍 Fetching news from Alpha Vantage...","timestamp":"2025-07-27T07:01:45.846Z"}
+{"level":"info","message":"🔍 Fetching news from NewsAPI...","timestamp":"2025-07-27T07:01:45.852Z"}
+{"level":"info","message":"🔍 Fetching news from Polygon.io...","timestamp":"2025-07-27T07:01:45.854Z"}
+{"level":"info","message":"✅ Polygon.io: 20 articles fetched","timestamp":"2025-07-27T07:01:47.006Z"}
+{"level":"info","message":"✅ NewsAPI: 20 articles fetched","timestamp":"2025-07-27T07:01:47.276Z"}
+{"level":"info","message":"✅ Alpha Vantage: 0 articles fetched","timestamp":"2025-07-27T07:01:48.022Z"}
+{"level":"info","message":"✅ Alpha Vantage: 0 articles added","timestamp":"2025-07-27T07:01:48.024Z"}
+{"level":"info","message":"✅ NewsAPI: 20 articles added","timestamp":"2025-07-27T07:01:48.024Z"}
+{"level":"info","message":"✅ Polygon.io: 20 articles added","timestamp":"2025-07-27T07:01:48.025Z"}
+{"level":"info","message":"📰 Total articles after deduplication: 40","timestamp":"2025-07-27T07:01:48.027Z"}
+{"level":"info","message":"🚀 Starting to fetch news from all sources...","timestamp":"2025-07-27T07:01:48.407Z"}
+{"level":"info","message":"🔍 Fetching news from Alpha Vantage...","timestamp":"2025-07-27T07:01:48.408Z"}
+{"level":"info","message":"🔍 Fetching news from NewsAPI...","timestamp":"2025-07-27T07:01:48.410Z"}
+{"level":"info","message":"🔍 Fetching news from Polygon.io...","timestamp":"2025-07-27T07:01:48.412Z"}
+{"level":"info","message":"✅ NewsAPI: 20 articles fetched","timestamp":"2025-07-27T07:01:48.737Z"}
+{"level":"info","message":"✅ Polygon.io: 20 articles fetched","timestamp":"2025-07-27T07:01:48.991Z"}
+{"level":"info","message":"✅ Alpha Vantage: 0 articles fetched","timestamp":"2025-07-27T07:01:49.116Z"}
+{"level":"info","message":"✅ Alpha Vantage: 0 articles added","timestamp":"2025-07-27T07:01:49.117Z"}
+{"level":"info","message":"✅ NewsAPI: 20 articles added","timestamp":"2025-07-27T07:01:49.118Z"}
+{"level":"info","message":"✅ Polygon.io: 20 articles added","timestamp":"2025-07-27T07:01:49.118Z"}
+{"level":"info","message":"📰 Total articles after deduplication: 40","timestamp":"2025-07-27T07:01:49.119Z"}
+{"level":"info","message":"🚀 Starting to fetch news from all sources...","timestamp":"2025-07-27T07:02:49.912Z"}
+{"level":"info","message":"🔍 Fetching news from Alpha Vantage...","timestamp":"2025-07-27T07:02:49.913Z"}
+{"level":"info","message":"🔍 Fetching news from NewsAPI...","timestamp":"2025-07-27T07:02:49.919Z"}
+{"level":"info","message":"🔍 Fetching news from Polygon.io...","timestamp":"2025-07-27T07:02:49.925Z"}
+{"level":"info","message":"✅ Alpha Vantage: 0 articles fetched","timestamp":"2025-07-27T07:02:50.728Z"}
+{"level":"info","message":"✅ Polygon.io: 20 articles fetched","timestamp":"2025-07-27T07:02:51.109Z"}
+{"level":"info","message":"✅ NewsAPI: 20 articles fetched","timestamp":"2025-07-27T07:02:51.306Z"}
+{"level":"info","message":"✅ Alpha Vantage: 0 articles added","timestamp":"2025-07-27T07:02:51.306Z"}
+{"level":"info","message":"✅ NewsAPI: 20 articles added","timestamp":"2025-07-27T07:02:51.307Z"}
+{"level":"info","message":"✅ Polygon.io: 20 articles added","timestamp":"2025-07-27T07:02:51.307Z"}
+{"level":"info","message":"📰 Total articles after deduplication: 40","timestamp":"2025-07-27T07:02:51.307Z"}
+{"level":"info","message":"🚀 Starting to fetch news from all sources...","timestamp":"2025-07-27T07:02:51.692Z"}
+{"level":"info","message":"🔍 Fetching news from Alpha Vantage...","timestamp":"2025-07-27T07:02:51.692Z"}
+{"level":"info","message":"🔍 Fetching news from NewsAPI...","timestamp":"2025-07-27T07:02:51.693Z"}
+{"level":"info","message":"🔍 Fetching news from Polygon.io...","timestamp":"2025-07-27T07:02:51.694Z"}
+{"level":"info","message":"✅ Polygon.io: 20 articles fetched","timestamp":"2025-07-27T07:02:52.006Z"}
+{"level":"info","message":"✅ NewsAPI: 20 articles fetched","timestamp":"2025-07-27T07:02:52.007Z"}
+{"level":"info","message":"✅ Alpha Vantage: 0 articles fetched","timestamp":"2025-07-27T07:02:52.423Z"}
+{"level":"info","message":"✅ Alpha Vantage: 0 articles added","timestamp":"2025-07-27T07:02:52.423Z"}
+{"level":"info","message":"✅ NewsAPI: 20 articles added","timestamp":"2025-07-27T07:02:52.423Z"}
+{"level":"info","message":"✅ Polygon.io: 20 articles added","timestamp":"2025-07-27T07:02:52.423Z"}
+{"level":"info","message":"📰 Total articles after deduplication: 40","timestamp":"2025-07-27T07:02:52.424Z"}
+{"level":"info","message":"🚀 Starting to fetch news from all sources...","timestamp":"2025-07-27T07:08:12.457Z"}
+{"level":"info","message":"🔍 Fetching news from Alpha Vantage...","timestamp":"2025-07-27T07:08:12.459Z"}
+{"level":"info","message":"Alpha Vantage URL: https://www.alphavantage.co/query","timestamp":"2025-07-27T07:08:12.460Z"}
+{"apikey":"***HIDDEN***","function":"NEWS_SENTIMENT","level":"info","limit":20,"message":"Alpha Vantage params:","sort":"LATEST","timestamp":"2025-07-27T07:08:12.460Z","topics":"financial_markets,technology,blockchain"}
+{"level":"info","message":"🔍 Fetching news from NewsAPI...","timestamp":"2025-07-27T07:08:12.468Z"}
+{"level":"info","message":"🔍 Fetching news from Polygon.io...","timestamp":"2025-07-27T07:08:12.470Z"}
+{"level":"info","message":"Alpha Vantage response status: 200","timestamp":"2025-07-27T07:08:13.360Z"}
+{"0":"items","1":"sentiment_score_definition","2":"relevance_score_definition","3":"feed","level":"info","message":"Alpha Vantage response data keys:","timestamp":"2025-07-27T07:08:13.360Z"}
+{"level":"info","message":"✅ Alpha Vantage: 0 articles fetched","timestamp":"2025-07-27T07:08:13.360Z"}
+{"level":"info","message":"✅ Polygon.io: 20 articles fetched","timestamp":"2025-07-27T07:08:13.580Z"}
+{"level":"info","message":"✅ NewsAPI: 20 articles fetched","timestamp":"2025-07-27T07:08:13.861Z"}
+{"level":"info","message":"✅ Alpha Vantage: 0 articles added","timestamp":"2025-07-27T07:08:13.861Z"}
+{"level":"info","message":"✅ NewsAPI: 20 articles added","timestamp":"2025-07-27T07:08:13.862Z"}
+{"level":"info","message":"✅ Polygon.io: 20 articles added","timestamp":"2025-07-27T07:08:13.862Z"}
+{"level":"info","message":"📰 Total articles after deduplication: 40","timestamp":"2025-07-27T07:08:13.862Z"}
+{"level":"info","message":"🚀 Starting to fetch news from all sources...","timestamp":"2025-07-27T07:08:14.255Z"}
+{"level":"info","message":"🔍 Fetching news from Alpha Vantage...","timestamp":"2025-07-27T07:08:14.256Z"}
+{"level":"info","message":"Alpha Vantage URL: https://www.alphavantage.co/query","timestamp":"2025-07-27T07:08:14.256Z"}
+{"apikey":"***HIDDEN***","function":"NEWS_SENTIMENT","level":"info","limit":20,"message":"Alpha Vantage params:","sort":"LATEST","timestamp":"2025-07-27T07:08:14.256Z","topics":"financial_markets,technology,blockchain"}
+{"level":"info","message":"🔍 Fetching news from NewsAPI...","timestamp":"2025-07-27T07:08:14.258Z"}
+{"level":"info","message":"🔍 Fetching news from Polygon.io...","timestamp":"2025-07-27T07:08:14.259Z"}
+{"level":"info","message":"Alpha Vantage response status: 200","timestamp":"2025-07-27T07:08:14.556Z"}
+{"0":"items","1":"sentiment_score_definition","2":"relevance_score_definition","3":"feed","level":"info","message":"Alpha Vantage response data keys:","timestamp":"2025-07-27T07:08:14.556Z"}
+{"level":"info","message":"✅ Alpha Vantage: 0 articles fetched","timestamp":"2025-07-27T07:08:14.556Z"}
+{"level":"info","message":"✅ NewsAPI: 20 articles fetched","timestamp":"2025-07-27T07:08:14.572Z"}
+{"level":"info","message":"✅ Polygon.io: 20 articles fetched","timestamp":"2025-07-27T07:08:14.780Z"}
+{"level":"info","message":"✅ Alpha Vantage: 0 articles added","timestamp":"2025-07-27T07:08:14.780Z"}
+{"level":"info","message":"✅ NewsAPI: 20 articles added","timestamp":"2025-07-27T07:08:14.781Z"}
+{"level":"info","message":"✅ Polygon.io: 20 articles added","timestamp":"2025-07-27T07:08:14.781Z"}
+{"level":"info","message":"📰 Total articles after deduplication: 40","timestamp":"2025-07-27T07:08:14.781Z"}
+{"level":"info","message":"🚀 Starting to fetch news from all sources...","timestamp":"2025-07-27T07:08:56.969Z"}
+{"level":"info","message":"🔍 Fetching news from Alpha Vantage...","timestamp":"2025-07-27T07:08:56.980Z"}
+{"level":"info","message":"Alpha Vantage URL: https://www.alphavantage.co/query","timestamp":"2025-07-27T07:08:56.981Z"}
+{"apikey":"***HIDDEN***","function":"NEWS_SENTIMENT","level":"info","limit":20,"message":"Alpha Vantage params:","sort":"LATEST","timestamp":"2025-07-27T07:08:56.982Z","topics":"financial_markets,technology,blockchain"}
+{"level":"info","message":"🔍 Fetching news from NewsAPI...","timestamp":"2025-07-27T07:08:56.987Z"}
+{"level":"info","message":"🔍 Fetching news from Polygon.io...","timestamp":"2025-07-27T07:08:56.990Z"}
+{"level":"info","message":"Alpha Vantage response status: 200","timestamp":"2025-07-27T07:08:57.772Z"}
+{"0":"items","1":"sentiment_score_definition","2":"relevance_score_definition","3":"feed","level":"info","message":"Alpha Vantage response data keys:","timestamp":"2025-07-27T07:08:57.772Z"}
+{"level":"info","message":"✅ Alpha Vantage: 0 articles fetched","timestamp":"2025-07-27T07:08:57.773Z"}
+{"level":"info","message":"✅ Polygon.io: 20 articles fetched","timestamp":"2025-07-27T07:08:58.129Z"}
+{"level":"info","message":"✅ NewsAPI: 20 articles fetched","timestamp":"2025-07-27T07:08:58.318Z"}
+{"level":"info","message":"✅ Alpha Vantage: 0 articles added","timestamp":"2025-07-27T07:08:58.318Z"}
+{"level":"info","message":"✅ NewsAPI: 20 articles added","timestamp":"2025-07-27T07:08:58.318Z"}
+{"level":"info","message":"✅ Polygon.io: 20 articles added","timestamp":"2025-07-27T07:08:58.319Z"}
+{"level":"info","message":"📰 Total articles after deduplication: 40","timestamp":"2025-07-27T07:08:58.319Z"}
+{"level":"info","message":"🚀 Starting to fetch news from all sources...","timestamp":"2025-07-27T07:08:58.735Z"}
+{"level":"info","message":"🔍 Fetching news from Alpha Vantage...","timestamp":"2025-07-27T07:08:58.736Z"}
+{"level":"info","message":"Alpha Vantage URL: https://www.alphavantage.co/query","timestamp":"2025-07-27T07:08:58.736Z"}
+{"apikey":"***HIDDEN***","function":"NEWS_SENTIMENT","level":"info","limit":20,"message":"Alpha Vantage params:","sort":"LATEST","timestamp":"2025-07-27T07:08:58.736Z","topics":"financial_markets,technology,blockchain"}
+{"level":"info","message":"🔍 Fetching news from NewsAPI...","timestamp":"2025-07-27T07:08:58.737Z"}
+{"level":"info","message":"🔍 Fetching news from Polygon.io...","timestamp":"2025-07-27T07:08:58.738Z"}
+{"level":"info","message":"✅ NewsAPI: 20 articles fetched","timestamp":"2025-07-27T07:08:59.047Z"}
+{"level":"info","message":"✅ Polygon.io: 20 articles fetched","timestamp":"2025-07-27T07:08:59.276Z"}
+{"level":"info","message":"Alpha Vantage response status: 200","timestamp":"2025-07-27T07:08:59.445Z"}
+{"0":"items","1":"sentiment_score_definition","2":"relevance_score_definition","3":"feed","level":"info","message":"Alpha Vantage response data keys:","timestamp":"2025-07-27T07:08:59.446Z"}
+{"level":"info","message":"✅ Alpha Vantage: 0 articles fetched","timestamp":"2025-07-27T07:08:59.446Z"}
+{"level":"info","message":"✅ Alpha Vantage: 0 articles added","timestamp":"2025-07-27T07:08:59.446Z"}
+{"level":"info","message":"✅ NewsAPI: 20 articles added","timestamp":"2025-07-27T07:08:59.446Z"}
+{"level":"info","message":"✅ Polygon.io: 20 articles added","timestamp":"2025-07-27T07:08:59.447Z"}
+{"level":"info","message":"📰 Total articles after deduplication: 40","timestamp":"2025-07-27T07:08:59.447Z"}
+{"level":"info","message":"🚀 Starting to fetch news from all sources...","timestamp":"2025-07-27T07:15:07.805Z"}
+{"level":"info","message":"🔍 Fetching news from Alpha Vantage...","timestamp":"2025-07-27T07:15:07.809Z"}
+{"level":"info","message":"Alpha Vantage URL: https://www.alphavantage.co/query","timestamp":"2025-07-27T07:15:07.810Z"}
+{"apikey":"***HIDDEN***","function":"NEWS_SENTIMENT","level":"info","limit":20,"message":"Alpha Vantage params:","sort":"LATEST","timestamp":"2025-07-27T07:15:07.810Z","topics":"financial_markets,technology,blockchain"}
+{"level":"info","message":"🔍 Fetching news from NewsAPI...","timestamp":"2025-07-27T07:15:07.819Z"}
+{"level":"info","message":"🔍 Fetching news from Polygon.io...","timestamp":"2025-07-27T07:15:07.822Z"}
+{"level":"info","message":"Alpha Vantage response status: 200","timestamp":"2025-07-27T07:15:08.214Z"}
+{"0":"items","1":"sentiment_score_definition","2":"relevance_score_definition","3":"feed","level":"info","message":"Alpha Vantage response data keys:","timestamp":"2025-07-27T07:15:08.215Z"}
+{"level":"info","message":"Alpha Vantage feed length:","timestamp":"2025-07-27T07:15:08.216Z"}
+{"level":"info","message":"Alpha Vantage items:","timestamp":"2025-07-27T07:15:08.217Z"}
+{"level":"warn","message":"⚠️ Alpha Vantage: No feed data received or feed is empty","timestamp":"2025-07-27T07:15:08.218Z"}
+{"level":"info","message":"Alpha Vantage full response:","timestamp":"2025-07-27T07:15:08.219Z"}
+{"level":"info","message":"✅ Polygon.io: 20 articles fetched","timestamp":"2025-07-27T07:15:09.062Z"}
+{"level":"info","message":"✅ NewsAPI: 20 articles fetched","timestamp":"2025-07-27T07:15:09.224Z"}
+{"level":"info","message":"✅ Alpha Vantage: 0 articles added","timestamp":"2025-07-27T07:15:09.224Z"}
+{"level":"info","message":"✅ NewsAPI: 20 articles added","timestamp":"2025-07-27T07:15:09.224Z"}
+{"level":"info","message":"✅ Polygon.io: 20 articles added","timestamp":"2025-07-27T07:15:09.225Z"}
+{"level":"info","message":"📰 Total articles after deduplication: 40","timestamp":"2025-07-27T07:15:09.225Z"}
+{"level":"info","message":"🚀 Starting to fetch news from all sources...","timestamp":"2025-07-27T07:15:09.602Z"}
+{"level":"info","message":"🔍 Fetching news from Alpha Vantage...","timestamp":"2025-07-27T07:15:09.603Z"}
+{"level":"info","message":"Alpha Vantage URL: https://www.alphavantage.co/query","timestamp":"2025-07-27T07:15:09.603Z"}
+{"apikey":"***HIDDEN***","function":"NEWS_SENTIMENT","level":"info","limit":20,"message":"Alpha Vantage params:","sort":"LATEST","timestamp":"2025-07-27T07:15:09.603Z","topics":"financial_markets,technology,blockchain"}
+{"level":"info","message":"🔍 Fetching news from NewsAPI...","timestamp":"2025-07-27T07:15:09.605Z"}
+{"level":"info","message":"🔍 Fetching news from Polygon.io...","timestamp":"2025-07-27T07:15:09.608Z"}
+{"level":"info","message":"✅ Polygon.io: 20 articles fetched","timestamp":"2025-07-27T07:15:10.172Z"}
+{"level":"info","message":"✅ NewsAPI: 20 articles fetched","timestamp":"2025-07-27T07:15:10.291Z"}
+{"level":"info","message":"Alpha Vantage response status: 200","timestamp":"2025-07-27T07:15:10.477Z"}
+{"0":"items","1":"sentiment_score_definition","2":"relevance_score_definition","3":"feed","level":"info","message":"Alpha Vantage response data keys:","timestamp":"2025-07-27T07:15:10.477Z"}
+{"level":"info","message":"Alpha Vantage feed length:","timestamp":"2025-07-27T07:15:10.478Z"}
+{"level":"info","message":"Alpha Vantage items:","timestamp":"2025-07-27T07:15:10.478Z"}
+{"level":"warn","message":"⚠️ Alpha Vantage: No feed data received or feed is empty","timestamp":"2025-07-27T07:15:10.478Z"}
+{"level":"info","message":"Alpha Vantage full response:","timestamp":"2025-07-27T07:15:10.478Z"}
+{"level":"info","message":"✅ Alpha Vantage: 0 articles added","timestamp":"2025-07-27T07:15:10.478Z"}
+{"level":"info","message":"✅ NewsAPI: 20 articles added","timestamp":"2025-07-27T07:15:10.478Z"}
+{"level":"info","message":"✅ Polygon.io: 20 articles added","timestamp":"2025-07-27T07:15:10.479Z"}
+{"level":"info","message":"📰 Total articles after deduplication: 40","timestamp":"2025-07-27T07:15:10.479Z"}

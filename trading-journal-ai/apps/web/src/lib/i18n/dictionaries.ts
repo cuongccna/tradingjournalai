@@ -304,9 +304,27 @@ export const dictionaries = {
 
       // News
       news: {
-        title: "News",
+        title: "Market News",
+        subtitle: "Latest updates and analysis from financial markets",
+        loading: "Loading news...",
+        lastUpdate: "Last updated:",
+        refreshButton: "Refresh",
+        searchPlaceholder: "Search news...",
+        readMore: "Read more",
         filters: {
           all: "All",
+          positive: "Positive",
+          negative: "Negative",
+          neutral: "Neutral"
+        },
+        categories: {
+          all: "All",
+          stock: "Stocks",
+          crypto: "Cryptocurrency",
+          forex: "Forex",
+          general: "General"
+        },
+        sentiment: {
           positive: "Positive",
           negative: "Negative",
           neutral: "Neutral"
@@ -315,6 +333,14 @@ export const dictionaries = {
           high: "High Impact",
           medium: "Medium Impact",
           low: "Low Impact"
+        },
+        error: {
+          title: "Error loading news",
+          message: "Unable to load news. Please try again later."
+        },
+        emptyState: {
+          title: "No news available",
+          description: "There are currently no news articles. Please try again later."
         },
         items: {
           techStocksRally: {
@@ -939,9 +965,27 @@ export const dictionaries = {
 
       // News
       news: {
-        title: "Tin tức",
+        title: "Tin tức thị trường",
+        subtitle: "Cập nhật thông tin và phân tích thị trường tài chính",
+        loading: "Đang tải tin tức...",
+        lastUpdate: "Cập nhật lần cuối:",
+        refreshButton: "Làm mới",
+        searchPlaceholder: "Tìm kiếm tin tức...",
+        readMore: "Đọc thêm",
         filters: {
           all: "Tất cả",
+          positive: "Tích cực",
+          negative: "Tiêu cực",
+          neutral: "Trung tính"
+        },
+        categories: {
+          all: "Tất cả",
+          stock: "Chứng khoán",
+          crypto: "Tiền điện tử",
+          forex: "Ngoại hối",
+          general: "Tổng hợp"
+        },
+        sentiment: {
           positive: "Tích cực",
           negative: "Tiêu cực",
           neutral: "Trung tính"
@@ -950,6 +994,14 @@ export const dictionaries = {
           high: "Tác động lớn",
           medium: "Tác động vừa",
           low: "Tác động thấp"
+        },
+        error: {
+          title: "Lỗi tải tin tức",
+          message: "Không thể tải tin tức. Vui lòng thử lại sau."
+        },
+        emptyState: {
+          title: "Không có tin tức",
+          description: "Hiện tại không có tin tức nào. Vui lòng thử lại sau."
         },
         items: {
           techStocksRally: {
@@ -1092,6 +1144,61 @@ export const dictionaries = {
               "Tập trung vào các ngành kháng lãi suất",
               "Xem xét bảo vệ lạm phát"
             ]
+          }
+        }
+      },
+
+      // API Settings Component
+      apiSettings: {
+        title: "Cài đặt API tin tức",
+        subtitle: "Cấu hình các khóa API để lấy tin tức thị trường tài chính",
+        saveButton: "Lưu cấu hình",
+        saving: "Đang lưu...",
+        saveSuccess: "Cấu hình API đã được lưu thành công",
+        saveError: "Không thể lưu cấu hình API",
+        getApiKey: "Lấy API Key",
+        apiKeyLabel: "API Key",
+        apiKeyPlaceholder: "Nhập API key của bạn...",
+        features: "Tính năng",
+        status: {
+          connected: "Đã kết nối",
+          disconnected: "Chưa kết nối"
+        },
+        providers: {
+          alphaVantage: {
+            description: "API tin tức và sentiment chất lượng cao từ Alpha Vantage",
+            features: ["25 requests/ngày miễn phí", "News & Sentiment", "Stocks & Crypto", "Real-time data"]
+          },
+          newsApi: {
+            description: "Tin tức tài chính từ Bloomberg, Reuters, CNBC và các nguồn uy tín",
+            features: ["1,000 requests/ngày miễn phí", "70,000+ nguồn tin", "Tìm kiếm nâng cao", "Lọc theo thời gian"]
+          },
+          polygon: {
+            description: "Dữ liệu thị trường và tin tức chính xác từ các sàn giao dịch",
+            features: ["5 calls/phút miễn phí", "Real-time data", "Options & Futures", "Sentiment analysis"]
+          }
+        },
+        help: {
+          title: "Hướng dẫn cài đặt",
+          step1: {
+            title: "Bước 1",
+            description: "Nhấp vào 'Lấy API Key' để đăng ký tài khoản miễn phí"
+          },
+          step2: {
+            title: "Bước 2", 
+            description: "Sao chép API key từ trang dashboard của nhà cung cấp"
+          },
+          step3: {
+            title: "Bước 3",
+            description: "Dán API key vào ô tương ứng và nhấn 'Lưu cấu hình'"
+          },
+          step4: {
+            title: "Bước 4",
+            description: "Kiểm tra trạng thái kết nối và bắt đầu sử dụng tin tức"
+          },
+          note: {
+            title: "Lưu ý",
+            description: "API keys được lưu trữ an toàn và chỉ được sử dụng để lấy dữ liệu tin tức"
           }
         }
       },

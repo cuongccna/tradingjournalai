@@ -1,11 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Navigation from '@/components/Navigation';
 import AITradeAnalysis from '@/components/ai/AITradeAnalysis';
 import MarketDataDashboard from '@/components/ai/MarketDataDashboard';
 import PatternRecognition from '@/components/ai/PatternRecognition';
 import RiskManagement from '@/components/ai/RiskManagement';
+import NewsComponent from '@/components/ai/NewsComponent';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -46,6 +48,7 @@ interface AIChat {
 
 export default function AIPage() {
   const { t } = useLanguage();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<'analysis' | 'patterns' | 'market' | 'risk' | 'news' | 'chat'>('analysis');
   const [marketNews, setMarketNews] = useState<MarketNews[]>([
     {
@@ -70,8 +73,8 @@ export default function AIPage() {
     },
     {
       id: '3',
-      title: t.ai.news.items.energyVolatility.title,
-      summary: t.ai.news.items.energyVolatility.summary,
+      title: 'Energy Sector Shows Volatility',
+      summary: 'Oil prices fluctuate amid global economic uncertainty and production changes.',
       sentiment: 'neutral',
       impact: 'medium',
       source: 'Bloomberg',
@@ -157,7 +160,11 @@ export default function AIPage() {
             </h1>
             <p className="text-gray-600 mt-2">{t.ai.subtitle}</p>
           </div>
-          <Button variant="outline" className="flex items-center gap-2">
+          <Button 
+            variant="outline" 
+            className="flex items-center gap-2"
+            onClick={() => router.push('/settings?tab=api')}
+          >
             <Settings className="h-4 w-4" />
             {t.ai.aiSettings}
           </Button>
@@ -218,7 +225,7 @@ export default function AIPage() {
             }`}
           >
             <Newspaper className="h-4 w-4" />
-            {t.ai.news.title}
+            Tin tức
           </button>
           <button
             onClick={() => setActiveTab('chat')}
@@ -242,56 +249,7 @@ export default function AIPage() {
 
         {activeTab === 'risk' && <RiskManagement />}
 
-        {activeTab === 'news' && (
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Globe className="h-5 w-5 text-blue-500" />
-                  {t.ai.news.title}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {marketNews.map((news) => (
-                    <div key={news.id} className="p-4 border rounded-lg hover:bg-gray-50 transition-colors">
-                      <div className="flex items-start justify-between mb-2">
-                        <h3 className="font-semibold text-gray-900 flex-1">{news.title}</h3>
-                        <div className="flex items-center gap-2 ml-4">
-                          <Badge className={getSentimentColor(news.sentiment)}>
-                            {t.ai.news.filters[news.sentiment as keyof typeof t.ai.news.filters]}
-                          </Badge>
-                          <Badge className={getImpactColor(news.impact)}>
-                            {t.ai.news.impact[news.impact as keyof typeof t.ai.news.impact]}
-                          </Badge>
-                        </div>
-                      </div>
-                      
-                      <p className="text-gray-600 text-sm mb-3">{news.summary}</p>
-                      
-                      <div className="flex items-center justify-between text-sm text-gray-500">
-                        <div className="flex items-center gap-4">
-                          <span>{news.source}</span>
-                          <div className="flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            {news.publishedAt}
-                          </div>
-                        </div>
-                        <div className="flex gap-1">
-                          {news.relevantSymbols.map(symbol => (
-                            <Badge key={symbol} variant="outline" className="text-xs">
-                              {symbol}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
+        {activeTab === 'news' && <NewsComponent />}
 
         {activeTab === 'chat' && (
           <div className="space-y-6">

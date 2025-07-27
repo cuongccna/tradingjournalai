@@ -26,6 +26,9 @@ importers:
 
   apps/backend:
     dependencies:
+      axios:
+        specifier: ^1.10.0
+        version: 1.10.0
       compression:
         specifier: ^1.7.4
         version: 1.8.1

@@ -19,6 +19,11 @@ interface UserProfile {
     defaultStrategy?: string;
     riskLevel?: 'low' | 'medium' | 'high';
   };
+  apiKeys?: {
+    alphaVantageApiKey?: string;
+    newsApiKey?: string;
+    polygonApiKey?: string;
+  };
   createdAt: string;
   updatedAt: string;
 }
@@ -90,7 +95,8 @@ export const updateUserProfile = async (req: Request, res: Response) => {
       'currency',
       'theme',
       'notifications',
-      'preferences'
+      'preferences',
+      'apiKeys'
     ];
 
     const filteredUpdates: any = {};
@@ -121,6 +127,92 @@ export const updateUserProfile = async (req: Request, res: Response) => {
     res.status(500).json({
       success: false,
       message: 'Failed to update user profile',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+};
+
+export const updateUserApiKeys = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user.uid;
+    const { alphaVantageApiKey, newsApiKey, polygonApiKey } = req.body;
+
+    // Prepare API keys object (only include non-empty keys)
+    const apiKeys: any = {};
+    if (alphaVantageApiKey && alphaVantageApiKey.trim()) {
+      apiKeys.alphaVantageApiKey = alphaVantageApiKey.trim();
+    }
+    if (newsApiKey && newsApiKey.trim()) {
+      apiKeys.newsApiKey = newsApiKey.trim();
+    }
+    if (polygonApiKey && polygonApiKey.trim()) {
+      apiKeys.polygonApiKey = polygonApiKey.trim();
+    }
+
+    // Update user profile with API keys
+    const updateData = {
+      apiKeys,
+      updatedAt: new Date().toISOString()
+    };
+
+    // Use set with merge to create document if it doesn't exist
+    await db.collection('users').doc(userId).set(updateData, { merge: true });
+
+    res.status(200).json({
+      success: true,
+      message: 'API keys updated successfully',
+      data: {
+        hasAlphaVantage: !!apiKeys.alphaVantageApiKey,
+        hasNewsApi: !!apiKeys.newsApiKey,
+        hasPolygon: !!apiKeys.polygonApiKey
+      }
+    });
+
+  } catch (error) {
+    console.error('Error updating user API keys:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update API keys',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+};
+
+export const getUserApiKeys = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user.uid;
+
+    const userDoc = await db.collection('users').doc(userId).get();
+    
+    if (!userDoc.exists) {
+      return res.status(200).json({
+        success: true,
+        data: {
+          hasAlphaVantage: false,
+          hasNewsApi: false,
+          hasPolygon: false
+        }
+      });
+    }
+
+    const profile = userDoc.data() as UserProfile;
+    const apiKeys = profile.apiKeys || {};
+
+    // Return status only (don't expose actual keys for security)
+    res.status(200).json({
+      success: true,
+      data: {
+        hasAlphaVantage: !!apiKeys.alphaVantageApiKey,
+        hasNewsApi: !!apiKeys.newsApiKey,
+        hasPolygon: !!apiKeys.polygonApiKey
+      }
+    });
+
+  } catch (error) {
+    console.error('Error getting user API keys:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get API keys status',
       error: error instanceof Error ? error.message : 'Unknown error'
     });
   }
