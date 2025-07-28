@@ -530,6 +530,17 @@ export const dictionaries = {
         }
       },
 
+      // Market Alerts
+      marketAlerts: {
+        title: "Market Alerts & Notifications",
+        subtitle: "Real-time market updates",
+        refresh: "Refresh",
+        marketOverview: "Market Overview",
+        portfolioPositions: "Portfolio Positions", 
+        alerts: "Market Alerts",
+        noAlerts: "No alerts at this time"
+      },
+
       // Chat & Messages
       messages: {
         initialMessage: "Hello! I'm your AI trading assistant. How can I help you analyze your trades today?",
@@ -1232,6 +1243,17 @@ export const dictionaries = {
             ]
           }
         }
+      },
+
+      // Market Alerts
+      marketAlerts: {
+        title: "Cảnh báo & Thông báo thị trường",
+        subtitle: "Cập nhật thị trường thời gian thực",
+        refresh: "Cập nhật",
+        marketOverview: "Tổng quan thị trường",
+        portfolioPositions: "Vị thế danh mục", 
+        alerts: "Cảnh báo thị trường",
+        noAlerts: "Hiện tại không có cảnh báo nào"
       },
 
       // API Settings Component

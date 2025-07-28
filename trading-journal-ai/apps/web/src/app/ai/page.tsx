@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Navigation from '@/components/Navigation';
 import AITradeAnalysis from '@/components/ai/AITradeAnalysis';
-import MarketDataDashboard from '@/components/ai/MarketDataDashboard';
+import MarketAlertsAndData from '@/components/ai/MarketAlertsAndData';
 import PatternRecognition from '@/components/ai/PatternRecognition';
 import RiskManagement from '@/components/ai/RiskManagement';
 import NewsComponent from '@/components/ai/NewsComponent';
@@ -49,7 +49,7 @@ interface AIChat {
 export default function AIPage() {
   const { t } = useLanguage();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'analysis' | 'patterns' | 'market' | 'risk' | 'news' | 'chat'>('analysis');
+  const [activeTab, setActiveTab] = useState<'analysis' | 'patterns' | 'market' | 'risk' | 'news' | 'chat'>('market');
   const [marketNews, setMarketNews] = useState<MarketNews[]>([
     {
       id: '1',
@@ -245,7 +245,7 @@ export default function AIPage() {
 
         {activeTab === 'patterns' && <PatternRecognition />}
 
-        {activeTab === 'market' && <MarketDataDashboard />}
+        {activeTab === 'market' && <MarketAlertsAndData />}
 
         {activeTab === 'risk' && <RiskManagement />}
 

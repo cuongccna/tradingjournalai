@@ -2,12 +2,24 @@ import { Router } from 'express';
 import { TradeService } from '../services/trade.service';
 import { authMiddleware } from '../middleware/auth.middleware';
 import { validateTrade } from '../validators/trade.validator';
+import { 
+  createTrade, 
+  getTradeById, 
+  getTrades, 
+  updateTrade, 
+  deleteTrade, 
+  getTradeStats,
+  getMarketData 
+} from '../controllers/trades.controller';
 
 const router: Router = Router();
 const tradeService = new TradeService();
 
 // Apply authentication middleware to all trade routes
 router.use(authMiddleware);
+
+// Vietnamese market data
+router.get('/market-data', getMarketData);
 
 // Create a new trade
 router.post('/', validateTrade, async (req, res, next) => {

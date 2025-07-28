@@ -119,3 +119,74 @@ export const getTradeStats = async (req: Request, res: Response, next: NextFunct
     next(error);
   }
 };
+
+export const getMarketData = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { symbols } = req.query;
+    
+    if (!symbols || typeof symbols !== 'string') {
+      return res.status(400).json({
+        success: false,
+        error: 'Symbols parameter is required'
+      });
+    }
+
+    const symbolList = symbols.split(',').map(s => s.trim().toUpperCase());
+    const vnSymbols = symbolList.filter(s => 
+      ['FPT', 'VCB', 'HPG', 'VHM', 'VNM', 'TCB', 'MSN', 'VIC', 'CTG', 'BID'].includes(s)
+    );
+
+    if (vnSymbols.length === 0) {
+      return res.json({
+        success: true,
+        data: {
+          marketData: [],
+          alerts: [],
+          overview: {
+            totalSymbols: 0,
+            gainers: [],
+            losers: [],
+            highVolatility: [],
+            lastUpdated: new Date().toISOString(),
+            marketSentiment: 'neutral'
+          }
+        },
+        message: 'No Vietnamese stocks found in symbols'
+      });
+    }
+
+    // Execute Python script for VN stocks
+    const { exec } = require('child_process');
+    const path = require('path');
+    
+    const scriptPath = path.join(__dirname, '../../scripts/vn_stocks_simple.py');
+    const command = `python "${scriptPath}" "${vnSymbols.join(',')}"`;
+
+    exec(command, { timeout: 30000 }, (error: any, stdout: string, stderr: string) => {
+      if (error) {
+        console.error('VN stocks script error:', error);
+        return res.status(500).json({
+          success: false,
+          error: 'Failed to fetch Vietnamese stock data'
+        });
+      }
+
+      try {
+        const marketData = JSON.parse(stdout);
+        res.json({
+          success: true,
+          data: marketData,
+          message: 'Vietnamese market data retrieved successfully'
+        });
+      } catch (parseError) {
+        console.error('Failed to parse VN stocks data:', parseError);
+        res.status(500).json({
+          success: false,
+          error: 'Failed to parse market data'
+        });
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
